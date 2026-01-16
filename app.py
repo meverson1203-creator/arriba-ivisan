@@ -12,17 +12,13 @@ app.config['SECRET_KEY'] = 'your_secret_key_here'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Database configuration
-database_url = os.environ.get('DATABASE_URL')
-if database_url:
-    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-else:
-    # ensure instance folder exists (so the sqlite file can be created there)
-    INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
-    os.makedirs(INSTANCE_DIR, exist_ok=True)
-    # SQLAlchemy DB (store under instance/ to match view_db.py)
-    # Use absolute path so SQLAlchemy can open the file regardless of CWD
-    DB_FILE = os.path.join(INSTANCE_DIR, 'site.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_FILE.replace('\\','/')}"
+# Always use SQLite database
+INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
+os.makedirs(INSTANCE_DIR, exist_ok=True)
+# SQLAlchemy DB (store under instance/ to match view_db.py)
+# Use absolute path so SQLAlchemy can open the file regardless of CWD
+DB_FILE = os.path.join(INSTANCE_DIR, 'site.db')
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_FILE.replace('\\','/')}"
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # file upload settings
