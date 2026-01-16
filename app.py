@@ -22,18 +22,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp'}
 db = SQLAlchemy(app)
 
-# Create all database tables
-with app.app_context():
-    db.create_all()
-    # Ensure default admin exists
-    admin = Admin.query.filter_by(username='admin').first()
-    if not admin:
-        hashed_pw = generate_password_hash('admin123')
-        new_admin = Admin(username='admin', password=hashed_pw, name='Administrator', email='admin@example.com')
-        db.session.add(new_admin)
-        db.session.commit()
-        print("Default admin created: username='admin', password='admin123'")
-
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
@@ -245,6 +233,19 @@ class Notification(db.Model):
     related_user = db.relationship('User', foreign_keys=[related_user_id])
     related_owner = db.relationship('Owner', foreign_keys=[related_owner_id])
     related_reservation = db.relationship('Reservation', foreign_keys=[related_reservation_id])
+
+
+# Create all database tables
+with app.app_context():
+    db.create_all()
+    # Ensure default admin exists
+    admin = Admin.query.filter_by(username='admin').first()
+    if not admin:
+        hashed_pw = generate_password_hash('admin123')
+        new_admin = Admin(username='admin', password=hashed_pw, name='Administrator', email='admin@example.com')
+        db.session.add(new_admin)
+        db.session.commit()
+        print("Default admin created: username='admin', password='admin123'")
 
 
 def allowed_file(filename):
@@ -2724,14 +2725,5 @@ def view_resort_activities():
     return render_template('viewResortActivities.html', owner=owner, activities=activities)
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        # Ensure default admin exists
-        default_admin = Admin.query.filter_by(username='admin').first()
-        if not default_admin:
-            hashed = generate_password_hash('password')
-            admin = Admin(username='admin', password=hashed, name='Administrator', email='admin@example.com')
-            db.session.add(admin)
-            db.session.commit()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
