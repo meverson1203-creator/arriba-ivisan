@@ -14,9 +14,6 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # Database configuration
 database_url = os.environ.get('DATABASE_URL')
 if database_url:
-    # For psycopg3 compatibility, ensure the URI specifies the psycopg driver
-    if database_url.startswith('postgresql://'):
-        database_url = database_url.replace('postgresql://', 'postgresql+psycopg://', 1)
     app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 else:
     # ensure instance folder exists (so the sqlite file can be created there)
