@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        /* Navbar styles moved to partials/navbar.html */
+
+        .content {
+            padding: 0;
+            height: 90vh;
+            overflow-y: scroll;
+        }
+
+        .intro-section {
+            background: linear-gradient(135deg, rgba(33, 147, 176, 0.9) 0%, rgba(109, 213, 237, 0.8) 100%);
+            backdrop-filter: blur(10px);
+            padding: 60px 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+            margin-bottom: 40px;
+        }
+
+        .intro-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('/static/images/bg.webp') center/cover;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .intro-content {
+            max-width: 800px;
+            margin: 0 auto;
+            z-index: 2;
+            position: relative;
+        }
+
+        .intro-section h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            letter-spacing: -1px;
+        }
+
+        .intro-section p {
+            font-size: 1.3rem;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            opacity: 0.95;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+        }
+
+        .browse-section {
+            padding: 0 20px 40px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .section-title h2 {
+            font-size: 2.5rem;
+            color: #2a2a2a;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .section-title p {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .resorts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .resort {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .resort:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 45px rgba(0,0,0,0.15);
+        }
+
+        .resort-image {
+            position: relative;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .resort img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            background: #eaeaea;
+            transition: transform 0.3s ease;
+        }
+
+        .resort:hover img {
+            transform: scale(1.05);
+        }
+
+        .resort-details {
+            padding: 24px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .resort-details h1 {
+            font-size: 1.4rem;
+            margin-bottom: 12px;
+            color: #2a2a2a;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stars {
+            color: #FFD700;
+            font-size: 1.2rem;
+            letter-spacing: 2px;
+        }
+
+        .number-of-reviews {
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .location {
+            color: #4a90e2;
+            font-size: 0.95rem;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .offers {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-top: auto;
+        }
+
+        .offers > div {
+            height: 80px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            transition: transform 0.2s ease;
+        }
+
+        .offers > div:hover {
+            transform: scale(1.05);
+        }
+
+        .offers > div img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 1200px) {
+            .resorts-grid {
+                grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+                gap: 25px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .intro-section {
+                padding: 40px 15px;
+            }
+
+            .intro-section h1 {
+                font-size: 2.2rem;
+            }
+
+            .intro-section p {
+                font-size: 1.1rem;
+            }
+
+            .section-title h2 {
+                font-size: 2rem;
+            }
+
+            .resorts-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 0 10px;
+            }
+            
+            .resort-image {
+                height: 200px;
+            }
+            
+            .offers {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .offers > div {
+                height: 60px;
+            }
+        }
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .login-container {
+            background: rgba(255,255,255,0.97);
+            padding: 2.5rem 2rem;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+        .login-container h2 {
+            margin-bottom: 0.5rem;
+            color: #2193b0;
+            letter-spacing: 1px;
+        }
+        .login-container p {
+            margin-bottom: 1.5rem;
+            color: #555;
+            font-size: 1rem;
+        }
+        .login-container input[type="text"],
+        .login-container input[type="password"] {
+            width: 90%;
+            padding: 0.7rem;
+            margin: 0.5rem 0 1rem 0;
+            border: 1px solid #b2ebf2;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.2s;
+        }
+        .login-container input[type="text"]:focus,
+        .login-container input[type="password"]:focus {
+            border: 1.5px solid #2193b0;
+        }
+        .login-container button {
+            width: 95%;
+            padding: 0.8rem;
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .login-container button:hover {
+            background: linear-gradient(90deg, #6dd5ed 0%, #2193b0 100%);
+        }
+        .login-container .register-link {
+            display: block;
+            margin-top: 1.2rem;
+            color: #2193b0;
+            text-decoration: none;
+            font-size: 0.98rem;
+        }
+        .login-container .register-link:hover {
+            text-decoration: underline;
+        }
+        /* Empty state styles */
+        .empty-state {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 60px 20px;
+        }
+        .empty-card {
+            background: linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(245,250,255,0.95) 100%);
+            border-radius: 16px;
+            padding: 36px 34px;
+            max-width: 720px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 12px 40px rgba(16,24,40,0.12), inset 0 1px 0 rgba(255,255,255,0.6);
+            border: 1px solid rgba(33,147,176,0.08);
+        }
+        .empty-illustration {
+            width: 160px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 12px;
+            margin-bottom: 18px;
+            box-shadow: 0 8px 24px rgba(33,147,176,0.08);
+            background: linear-gradient(90deg, #e6f7ff, #f0fff4);
+        }
+        .empty-card h2 {
+            font-size: 1.6rem;
+            color: #154a57;
+            margin-bottom: 8px;
+        }
+        .empty-card p {
+            color: #4b5563;
+            margin-bottom: 18px;
+            line-height: 1.4;
+        }
+        .empty-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .btn.primary {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            box-shadow: 0 8px 24px rgba(33,147,176,0.18);
+        }
+        .btn.secondary {
+            background: transparent;
+            color: #154a57;
+            border: 1.5px solid rgba(21,74,87,0.12);
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+    
+    
+    <div class="content">
+        <!-- Introduction Section -->
+        <div class="intro-section">
+            <div class="intro-content">
+                <h1>Discover Paradise</h1>
+                <p>Explore the most beautiful resorts and create unforgettable memories. From luxury accommodations to exciting activities, find your perfect getaway destination.</p>
+            </div>
+        </div>
+
+        <!-- Browse Section -->
+        <div class="browse-section">
+            {% if not owners or owners|length == 0 %}
+            <div class="empty-state">
+                <div class="empty-card">
+                    <img src="{{ url_for('static', filename='images/bg.webp') }}" alt="No Resorts" class="empty-illustration">
+                    <h2>No resorts yet</h2>
+                    <p>We couldn't find any resorts. Owners can add their resort to get listed here. In the meantime, feel free to sign up or come back later.</p>
+                    <div class="empty-actions">
+                        <a href="{{ url_for('owner_sign_up') }}" class="btn primary">Become an Owner</a>
+                        <a href="{{ url_for('user_sign_up') }}" class="btn secondary">Browse as Guest</a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="resorts-grid">
+            {% for owner in owners %}
+            <a href="{{ url_for('view_resort_main', owner_id=owner.id) }}" style="text-decoration:none;color:inherit;">
+                <div class="resort">
+                    <div class="resort-image">
+                        {% if owner.resort_profile_image %}
+                            <img src="{{ url_for('static', filename=owner.resort_profile_image) }}" alt="Resort Profile Image">
+                        {% else %}
+                            <img src="/static/images/bg.webp" alt="Resort Image">
+                        {% endif %}
+                    </div>
+                    <div class="resort-details">
+                        <h1>{{ owner.resort_name }}</h1>
+                        <div class="rating">
+                            <div class="stars">★ ★ ★ ★ ☆</div>
+                            <div class="number-of-reviews">({{ owner.reviews or '0 reviews' }})</div>
+                        </div>
+                        <div class="location">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                                <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#4a90e2"/>
+                            </svg>
+                            {{ owner.resort_address or owner.address or 'Address not provided' }}
+                        </div>
+                        <div class="offers">
+                            {# latest room image (first non-empty image field) #}
+                            {% set room_img = None %}
+                            {% if owner.rooms and owner.rooms|length > 0 %}
+                                {% set r = owner.rooms[-1] %}
+                                {% set room_img = r.image1 or r.image2 or r.image3 or r.image4 or r.image5 %}
+                            {% endif %}
+                            {% if room_img %}
+                                <div class="room-img">
+                                    <img src="{{ url_for('static', filename=room_img) }}" alt="Room">
+                                </div>
+                            {% endif %}
+
+                            {# latest cottage image #}
+                            {% set cottage_img = None %}
+                            {% if owner.cottages and owner.cottages|length > 0 %}
+                                {% set c = owner.cottages[-1] %}
+                                {% set cottage_img = c.image1 or c.image2 or c.image3 or c.image4 or c.image5 %}
+                            {% endif %}
+                            {% if cottage_img %}
+                                <div class="cottage-img">
+                                    <img src="{{ url_for('static', filename=cottage_img) }}" alt="Cottage">
+                                </div>
+                            {% endif %}
+
+                            {# activities image isn't modeled; keep fallback #}
+                            {# latest activity image #}
+                            {% set activity_img = None %}
+                            {% if owner.activities and owner.activities|length > 0 %}
+                                {% set act = owner.activities[-1] %}
+                                {% set activity_img = act.image1 or act.image2 or act.image3 or act.image4 or act.image5 %}
+                            {% endif %}
+                            {% if activity_img %}
+                                <div class="activities-img">
+                                    <img src="{{ url_for('static', filename=activity_img) }}" alt="Activity">
+                                </div>
+                            {% endif %}
+
+                            {# latest food image #}
+                            {% set food_img = None %}
+                            {% if owner.foods and owner.foods|length > 0 %}
+                                {% set f = owner.foods[-1] %}
+                                {% set food_img = f.image1 or f.image2 or f.image3 or f.image4 or f.image5 %}
+                            {% endif %}
+                            {% if food_img %}
+                                <div class="food-img">
+                                    <img src="{{ url_for('static', filename=food_img) }}" alt="Food">
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+        </div> <!-- End browse-section -->
+    </div> <!-- End content -->
+    <!-- Modal for Customer Login -->
+    <div id="loginModal" class="modal-overlay" style="display:none;">
+        <div class="login-container">
+            <h2>IVISAN BEACH & RESORT</h2>
+            <p>Customer Login</p>
+            <form>
+                <input type="text" placeholder="Username" required>
+                <input type="password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <a href="#" class="register-link" id="ownerLoginLink">Are you a Resort Owner? Login Here</a>
+        </div>
+    </div>
+    <!-- Modal for Resort Owner Login -->
+    <div id="ownerLoginModal" class="modal-overlay" style="display:none;">
+        <div class="login-container">
+            <h2>IVISAN BEACH & RESORT</h2>
+            <p>Resort Owner Login</p>
+            <form>
+                <input type="text" placeholder="Owner Username" required>
+                <input type="password" placeholder="Owner Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <a href="#" class="register-link" id="customerLoginLink">Are you a Customer? Login Here</a>
+        </div>
+    </div>
+    <!-- Modal for Sign Up Selection -->
+    <div id="signUpModal" class="modal-overlay" style="display:none;">
+        <div class="login-container">
+            <h2>Sign Up As</h2>
+            <a href="{{ url_for('user_sign_up') }}">
+                <button id="signUpCustomerBtn" style="margin-bottom:1rem;">Customer</button>
+            </a>
+            <a href="{{ url_for('owner_sign_up') }}">
+                <button id="signUpOwnerBtn">Resort Owner</button>
+            </a>
+            <br>
+            <a href="#" class="register-link" id="closeSignUpModal">Cancel</a>
+        </div>
+    </div>
+    <script>
+
+    </script>
+</body>
+</html>

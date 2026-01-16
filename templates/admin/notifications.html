@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifications - Admin</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .content {
+            display: flex;
+            width: 100%;
+            height: 90vh;
+            padding: 30px 40px;
+        }
+
+        .main {
+            background-color: #fff;
+            width: 100%;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .notification-header h1 {
+            font-size: 28px;
+            color: #2193b0;
+        }
+
+        .mark-all-read-btn {
+            padding: 10px 20px;
+            background-color: #2193b0;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .mark-all-read-btn:hover {
+            background-color: #1a7a93;
+        }
+
+        .notification-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            background-color: #f0f0f0;
+            border: 2px solid transparent;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .filter-btn.active {
+            background-color: #2193b0;
+            color: white;
+            border-color: #2193b0;
+        }
+
+        .notification-item {
+            background-color: #f9f9f9;
+            border-left: 4px solid #2193b0;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .notification-item:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transform: translateX(5px);
+        }
+
+        .notification-item.unread {
+            background-color: #e3f2fd;
+            border-left-color: #FFA500;
+        }
+
+        .notification-item.new-user {
+            border-left-color: #4CAF50;
+        }
+
+        .notification-item.new-owner {
+            border-left-color: #2196F3;
+        }
+
+        .notification-item.new-reservation {
+            border-left-color: #FF9800;
+        }
+
+        .notification-content {
+            display: flex;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .notification-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #ddd;
+        }
+
+        .notification-details {
+            flex: 1;
+        }
+
+        .notification-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .notification-message {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .notification-meta {
+            display: flex;
+            gap: 15px;
+            font-size: 14px;
+            color: #999;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .view-btn {
+            background-color: #2193b0;
+            color: white;
+        }
+
+        .view-btn:hover {
+            background-color: #1a7a93;
+        }
+
+        .mark-read-btn {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        .mark-read-btn:hover {
+            background-color: #45a049;
+        }
+
+        .no-notifications {
+            text-align: center;
+            padding: 40px;
+            color: #999;
+            font-size: 18px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .badge-new {
+            background-color: #FFA500;
+        }
+
+        .badge-user {
+            background-color: #4CAF50;
+        }
+
+        .badge-owner {
+            background-color: #2196F3;
+        }
+
+        .badge-reservation {
+            background-color: #FF9800;
+        }
+    </style>
+</head>
+<body>
+    <div class="navbar">
+        <p class="title">Arriba Ivisan</p>
+        <div class="nav-links">
+            <a href="{{ url_for('logout') }}">Logout</a>
+        </div>
+    </div>
+    <div class="content">
+
+        {% include 'partials/admin_sidebar.html' %}
+
+        <div class="main">
+            <div class="notification-header">
+                <h1>Notifications</h1>
+                <button class="mark-all-read-btn" onclick="markAllAsRead()">Mark All as Read</button>
+            </div>
+
+            <div class="notification-filter">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="unread">Unread</button>
+                <button class="filter-btn" data-filter="new_user">New Users</button>
+                <button class="filter-btn" data-filter="new_owner">New Owners</button>
+                <button class="filter-btn" data-filter="new_reservation">New Reservations</button>
+            </div>
+
+            <div id="notifications-container">
+                {% if notifications and notifications|length > 0 %}
+                    {% for notif in notifications %}
+                    <div class="notification-item {{ 'unread' if not notif.is_read else '' }} {{ notif.type }}" 
+                         data-id="{{ notif.id }}" 
+                         data-type="{{ notif.type }}"
+                         data-read="{{ 'true' if notif.is_read else 'false' }}">
+                        <div class="notification-content">
+                            {% if notif.user and notif.user.avatar %}
+                                <img src="{{ url_for('static', filename=notif.user.avatar) }}" class="notification-avatar" alt="Avatar">
+                            {% elif notif.owner and notif.owner.avatar %}
+                                <img src="{{ url_for('static', filename=notif.owner.avatar) }}" class="notification-avatar" alt="Avatar">
+                            {% else %}
+                                <img src="{{ url_for('static', filename='images/defaults/avatar.svg') }}" class="notification-avatar" alt="Avatar">
+                            {% endif %}
+
+                            <div class="notification-details">
+                                <div class="notification-title">
+                                    {{ notif.title }}
+                                    {% if not notif.is_read %}
+                                        <span class="badge badge-new">NEW</span>
+                                    {% endif %}
+                                    {% if notif.type == 'new_user' %}
+                                        <span class="badge badge-user">USER</span>
+                                    {% elif notif.type == 'new_owner' %}
+                                        <span class="badge badge-owner">OWNER</span>
+                                    {% elif notif.type == 'new_reservation' %}
+                                        <span class="badge badge-reservation">RESERVATION</span>
+                                    {% endif %}
+                                </div>
+                                <div class="notification-message">{{ notif.message }}</div>
+                                
+                                {% if notif.user %}
+                                <div style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+                                    <strong>User Details:</strong><br>
+                                    Name: {{ notif.user.name }}<br>
+                                    Email: {{ notif.user.email }}<br>
+                                    {% if notif.user.contact_number %}Contact: {{ notif.user.contact_number }}{% endif %}
+                                </div>
+                                {% endif %}
+
+                                {% if notif.owner %}
+                                <div style="margin: 10px 0; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+                                    <strong>Owner Details:</strong><br>
+                                    Name: {{ notif.owner.name }}<br>
+                                    {% if notif.owner.resort_name %}Resort: {{ notif.owner.resort_name }}<br>{% endif %}
+                                    {% if notif.owner.resort_address %}Address: {{ notif.owner.resort_address }}<br>{% endif %}
+                                    Email: {{ notif.owner.email }}<br>
+                                    {% if notif.owner.contact_number %}Contact: {{ notif.owner.contact_number }}{% endif %}
+                                </div>
+                                {% endif %}
+
+                                {% if notif.reservation %}
+                                <div style="margin: 10px 0; padding: 10px; background: #fff3cd; border-radius: 5px;">
+                                    <strong>Reservation Details:</strong><br>
+                                    Resource: {{ notif.reservation.resource_name }} ({{ notif.reservation.resource_type }})<br>
+                                    Check-in: {{ notif.reservation.check_in.strftime('%Y-%m-%d') if notif.reservation.check_in else 'N/A' }}<br>
+                                    Check-out: {{ notif.reservation.check_out.strftime('%Y-%m-%d') if notif.reservation.check_out else 'N/A' }}<br>
+                                    Guests: {{ notif.reservation.guests }}<br>
+                                    Status: <strong>{{ notif.reservation.status.upper() }}</strong>
+                                </div>
+                                {% endif %}
+
+                                <div class="notification-meta">
+                                    <span>📅 {{ notif.created_at.strftime('%B %d, %Y at %I:%M %p') }}</span>
+                                </div>
+
+                                <div class="notification-actions">
+                                    {% if notif.user %}
+                                        <a href="{{ url_for('admin_users') }}" class="action-btn view-btn">View User</a>
+                                    {% endif %}
+                                    {% if notif.owner %}
+                                        <a href="{{ url_for('admin_owners') }}" class="action-btn view-btn">View Owner</a>
+                                    {% endif %}
+                                    {% if not notif.is_read %}
+                                        <button class="action-btn mark-read-btn" data-notification-id="{{ notif.id }}">Mark as Read</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-notifications">
+                        <p>📭 No notifications yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Filter notifications
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // Update active state
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+
+                const filter = this.getAttribute('data-filter');
+                const notifications = document.querySelectorAll('.notification-item');
+
+                notifications.forEach(notif => {
+                    if (filter === 'all') {
+                        notif.style.display = 'block';
+                    } else if (filter === 'unread') {
+                        notif.style.display = notif.getAttribute('data-read') === 'false' ? 'block' : 'none';
+                    } else {
+                        notif.style.display = notif.getAttribute('data-type') === filter ? 'block' : 'none';
+                    }
+                });
+            });
+        });
+
+        // Mark single notification as read using event delegation
+        document.addEventListener('click', function(e) {
+            if (e.target && e.target.classList.contains('mark-read-btn')) {
+                const notificationId = e.target.getAttribute('data-notification-id');
+                if (notificationId) {
+                    markAsRead(notificationId);
+                }
+            }
+        });
+
+        function markAsRead(notificationId) {
+            fetch(`/api/admin/notifications/mark-read/${notificationId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const notifElement = document.querySelector(`[data-id="${notificationId}"]`);
+                    if (notifElement) {
+                        notifElement.classList.remove('unread');
+                        notifElement.setAttribute('data-read', 'true');
+                        const newBadge = notifElement.querySelector('.badge-new');
+                        const markReadBtn = notifElement.querySelector('.mark-read-btn');
+                        if (newBadge) newBadge.remove();
+                        if (markReadBtn) markReadBtn.remove();
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        // Mark all notifications as read
+        function markAllAsRead() {
+            if (!confirm('Mark all notifications as read?')) return;
+
+            fetch('/api/admin/notifications/mark-all-read', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>

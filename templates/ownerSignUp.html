@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        body {
+            min-height: 100vh;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .signup-container {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            width: 95%;
+            max-width: 900px;
+            padding: 40px 32px 32px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .signup-container h1 {
+            color: #e67e22; /* orange */
+            font-size: 2rem;
+            margin-bottom: 24px;
+            letter-spacing: 1px;
+        }
+        .flash-list { width: 100%; margin-bottom: 12px; }
+        .flash { padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; font-weight:600 }
+        .flash.success { background: #e6ffed; color: #1a7f3a; border: 1px solid #b7f0c3 }
+        .flash.danger { background: #ffe6e6; color: #b11a1a; border: 1px solid #f0b7b7 }
+        .flash.inc-pass {
+            margin-top: 15px;
+        }
+        .user-container {
+            display: flex;
+            width: 100%;
+            gap: 32px;
+            margin-bottom: 24px;
+        }
+        .profile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 18px;
+            min-width: 200px;
+        }
+        .profile-img {
+            border: 2px solid #ffd9b3; /* light orange */
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: #fff4ea url('assets/images/bg.webp') center/cover no-repeat;
+            margin-bottom: 8px;
+        }
+        .profile-container input[type="file"] {
+            border: none;
+            background: #f5f5f5;
+            border-radius: 8px;
+            padding: 8px 0;
+            width: 100%;
+            font-size: 1rem;
+        }
+        .user-information {
+            display: flex;
+            gap: 24px;
+            width: 100%;
+            justify-content: center;
+        }
+        .user-information > div {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 250px;
+        }
+        .user-information input[type="text"] {
+            padding: 12px 14px;
+            border: 1px solid #ffd9b3;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.2s;
+            background: #fff8f2;
+        }
+        .user-information input[type="password"] {
+            padding: 12px 14px;
+            border: 1px solid #ffd9b3;
+            border-radius: 8px;
+            font-size: 1rem;
+            outline: none;
+            transition: border 0.2s;
+            background: #fff8f2;
+        }
+        .user-information input[type="text"]:focus {
+            border: 1.5px solid #ff9f43;
+            background: #fff4eb;
+        }
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            margin-top: 32px;
+        }
+        .modern-button, .back-button {
+            padding: 0.8rem 2.2rem;
+            background: linear-gradient(90deg, #ffb86b 0%, #ff8c42 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .modern-button:hover, .back-button:hover {
+            background: linear-gradient(90deg, #ff8c42 0%, #ffb86b 100%);
+        }
+        .back-button {
+            background: #e0e0e0;
+            color: #2193b0;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+        @media (max-width: 900px) {
+            .signup-container { padding: 24px 8px; }
+            .user-container { flex-direction: column; align-items: center; gap: 18px; }
+            .user-information { flex-direction: column; gap: 18px; align-items: center; }
+            .user-information > div { width: 100%; }
+            .form-actions { flex-direction: column; gap: 16px; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+    <div class="signup-container">
+        <h1>Owner Fill Up Form</h1>
+        {# flash messages #}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-list">
+                    {% for category, message in messages %}
+                        <div class="flash {{ category }}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <form method="POST" action="{{ url_for('owner_sign_up') }}" enctype="multipart/form-data">
+            <div class="user-container">
+                <div class="profile-container">
+                    <div class="profile-img"></div>
+                    <input type="file" name="avatar" accept="image/png, image/jpeg, image/jpg, image/gif, image/webp">
+                </div>
+                <div class="user-information">
+                    <div>
+                        <input type="text" name="name" placeholder="Name" required>
+                        <input type="text" name="birthdate" placeholder="Birthdate" required>
+                        <input type="text" name="gender" placeholder="Gender" required>
+                        <input type="text" name="address" placeholder="Permanent Address" required>
+                        <input type="text" name="resort_address" placeholder="Resort Address" required>
+                    </div>
+                    <div>
+                        <input type="text" name="age" placeholder="Age" required>
+                        <input type="text" name="email" placeholder="Email" required>
+                        <input type="text" name="contact_number" placeholder="Contact Number" required>
+                        <input type="text" name="facebook" placeholder="Facebook:" required>
+                        <input type="text" name="resort_name" placeholder="Resort Name:" required>
+                        <input type="text" name="entrance_fee" placeholder="Entrance Fee (e.g., ₱100 per person)">
+                    </div>
+                </div>
+            </div>
+            <div class="user-information" style="margin-top: 18px;">
+                <div>
+                    <input type="text" name="business_id" placeholder="Business Registration ID" required>
+                    <input type="text" name="tax_id" placeholder="Tax ID" required>
+                    <input type="text" name="bank_account" placeholder="Bank Account" required>
+                </div>
+                <div>
+                    <input type="text" name="gcash" placeholder="GCash" required>
+                    <input type="text" name="paymaya" placeholder="PayMaya" required>
+                    <input type="text" name="paypal" placeholder="Paypal" required>
+                </div>
+                <div>
+                    <input type="text" name="username" placeholder="Username" required>
+                    <input type="password" name="password" placeholder="Password" required>
+                    <input type="password" name="confirm_password" placeholder="Confirm Password" required>
+                </div>
+            </div>
+            <div class="form-actions">
+                <a href="{{ url_for('browse') }}" class="back-button" type="button">Back</a>
+                <button type="submit" class="modern-button">Submit</button>
+            </div>
+        </form>
+    </div>
+</body>
+    <script>
+        // Preview selected avatar in the circular .profile-img element
+        (function() {
+            const fileInput = document.querySelector('.profile-container input[name="avatar"]');
+            const profileImg = document.querySelector('.profile-container .profile-img');
+            const defaultBg = profileImg ? getComputedStyle(profileImg).backgroundImage : '';
+
+            if (!fileInput || !profileImg) return;
+
+            fileInput.addEventListener('change', (e) => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) {
+                    // restore default
+                    profileImg.style.backgroundImage = defaultBg;
+                    return;
+                }
+
+                if (!file.type.startsWith('image/')) return;
+
+                const reader = new FileReader();
+                reader.onload = function(evt) {
+                    profileImg.style.backgroundImage = `url('${evt.target.result}')`;
+                    profileImg.style.backgroundSize = 'cover';
+                    profileImg.style.backgroundPosition = 'center';
+                };
+                reader.readAsDataURL(file);
+            });
+        })();
+
+        // Client-side password confirmation validation
+        (function() {
+            const form = document.querySelector('form');
+            if (!form) return;
+
+            const pwd = form.querySelector('input[name="password"]');
+            const confirm = form.querySelector('input[name="confirm_password"]');
+
+            // create or reuse an inline error container to show password mismatch
+            let passwordError = document.getElementById('password-error');
+            if (!passwordError) {
+                passwordError = document.createElement('div');
+                passwordError.id = 'password-error';
+                // use existing flash styling for consistency
+                passwordError.className = 'flash danger inc-pass';
+                passwordError.style.display = 'none';
+                passwordError.setAttribute('role', 'alert');
+                passwordError.setAttribute('aria-live', 'polite');
+
+                // place it just above the form actions so it's visible near submit
+                const formActions = document.querySelector('.form-actions');
+                if (formActions && formActions.parentNode) {
+                    formActions.parentNode.insertBefore(passwordError, formActions);
+                } else {
+                    form.appendChild(passwordError);
+                }
+            }
+
+            function showPasswordError(msg) {
+                passwordError.textContent = msg;
+                passwordError.style.display = 'block';
+            }
+
+            function hidePasswordError() {
+                passwordError.textContent = '';
+                passwordError.style.display = 'none';
+            }
+
+            // Prevent submit when passwords don't match
+            form.addEventListener('submit', function(e) {
+                if (!pwd || !confirm) return;
+                if (pwd.value !== confirm.value) {
+                    e.preventDefault();
+                    showPasswordError('Passwords do not match. Please make sure both fields match.');
+                    confirm.focus();
+                }
+            });
+
+            // live-check: hide error once they match
+            function checkMatch() {
+                if (!pwd || !confirm) return;
+                if (pwd.value && confirm.value && pwd.value === confirm.value) {
+                    hidePasswordError();
+                }
+            }
+
+            if (pwd) pwd.addEventListener('input', checkMatch);
+            if (confirm) confirm.addEventListener('input', checkMatch);
+        })();
+    </script>
+</html>

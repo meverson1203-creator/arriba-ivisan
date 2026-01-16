@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        .content {
+            display: flex;
+            width: 100%;
+            height: 90vh;
+            padding: 30px 40px;
+        }
+        .sidebar {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            width: 22%;
+            border: none;
+            margin-right: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 18px;
+            padding: 32px 0 24px 0;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            min-width: 220px;
+            transition: box-shadow 0.2s;
+        }
+        .sidebar h1 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2.5rem;
+            letter-spacing: 1px;
+        }
+        .sidebar a {
+            font-size: 1.15rem;
+            width: 90%;
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .sidebar a:hover {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+        .sidebar a.active {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+        .sidebar a svg {
+            min-width: 22px;
+            min-height: 22px;
+            margin-right: 14px;
+            transition: filter 0.18s;
+        }
+        .sidebar a:hover svg {
+            filter: brightness(0) invert(1);
+        }
+        .sidebar a p {
+            margin-left: 0;
+            font-weight: 600;
+            color: inherit;
+            letter-spacing: 0.5px;
+        }
+        .main {
+            background-color: #fff;
+            width: 100%;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+        }
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2193b0;
+        }
+        .profile-box {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            height: 100%;
+            flex: 1;       /* allow the box to grow inside .main */
+            min-height: 0; /* necessary so child with overflow can shrink/scroll */
+        }
+        .profile-container {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e3f0ff center/cover no-repeat;
+            border: 2px solid #2193b0;
+            margin-bottom: 16px;
+        }
+        .profile-username {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .modern-button {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0.6rem 1.6rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .user-information {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 28px 18px;
+            min-width: 340px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px 32px;
+            align-items: stretch;
+            height: 100%;
+            overflow: auto;      /* enable vertical scrolling when needed */
+            box-sizing: border-box;
+        }
+        .user-information > div {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            height: 100%;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2px;
+            font-size: 0.98rem;
+        }
+        .info-value {
+            color: #333;
+            margin-bottom: 18px;
+            font-size: 0.97rem;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+    
+    <div class="content">
+
+        {% include 'partials/owner_sidebar.html' %}
+
+        <div class="main">
+            <div class="profile-header">
+                <div class="profile-title">Your Profile Information</div>
+            </div>
+            <div class="profile-box">
+                <div class="profile-container">
+                    {%- set avatar_url = None -%}
+                    {%- if user.avatar -%}
+                        {%- set avatar_url = url_for('static', filename=user.avatar) -%}
+                    {%- elif session.get('owner_avatar') -%}
+                        {%- set avatar_url = url_for('static', filename=session.get('owner_avatar')) -%}
+                    {%- else -%}
+                        {%- set avatar_url = url_for('static', filename='images/defaults/avatar.svg') -%}
+                    {%- endif -%}
+                    <div class="profile-img" style="background-image: url('{{ avatar_url }}'); background-size: cover; background-position: center"></div>
+                    <h2 style="text-align: center;">{{ user.name }}</h2>
+                    <div class="profile-username">@{{ user.username }}</div>
+                    {% if user.resort_name %}
+                        <div style="margin-top:8px;color:#555;font-weight:600;">Resort: {{ user.resort_name }}</div>
+                    {% endif %}
+                    {% if user.resort_address %}
+                        <div style="color:#777;font-size:0.95rem;">Location: {{ user.resort_address }}</div>
+                    {% endif %}
+                </div>
+                <div class="user-information">
+                    <div>
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ user.email }}</div>
+
+                        <div class="info-label">Birthdate</div>
+                        <div class="info-value">{{ user.birthdate }}</div>
+
+                        <div class="info-label">Gender</div>
+                        <div class="info-value">{{ user.gender }}</div>
+
+                        <div class="info-label">Address</div>
+                        <div class="info-value">{{ user.address }}</div>
+
+                        <div class="info-label">Resort Address</div>
+                        <div class="info-value">{{ user.resort_address }}</div>
+
+                        <div class="info-label">Age</div>
+                        <div class="info-value">{{ user.age }}</div>
+
+                        <div class="info-label">Resort Name</div>
+                        <div class="info-value">{{ user.resort_name }}</div>
+
+                        <div class="info-label">Entrance Fee</div>
+                        <div class="info-value" style="display: flex; align-items: center; gap: 10px;">
+                            <span id="entrance-fee-display">{{ user.entrance_fee if user.entrance_fee else 'Not set' }}</span>
+                            <button onclick="editEntranceFee()" class="modern-button" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Edit</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="info-label">Contact Number</div>
+                        <div class="info-value">{{ user.contact_number }}</div>
+
+                        <div class="info-label">Facebook</div>
+                        <div class="info-value">{{ user.facebook }}</div>
+
+                        <div class="info-label">Business ID</div>
+                        <div class="info-value">{{ user.business_id }}</div>
+
+                        <div class="info-label">Tax ID</div>
+                        <div class="info-value">{{ user.tax_id }}</div>
+
+                        <div class="info-label">Bank Account</div>
+                        <div class="info-value">{{ user.bank_account }}</div>
+
+                        <div class="info-label">GCash</div>
+                        <div class="info-value">{{ user.gcash }}</div>
+
+                        <div class="info-label">PayMaya</div>
+                        <div class="info-value">{{ user.paymaya }}</div>
+
+                        <div class="info-label">PayPal</div>
+                        <div class="info-value">{{ user.paypal }}</div>
+
+                        <!-- Resort Image Management Section -->
+                        <div class="info-label">Resort Profile Image</div>
+                        <div class="info-value">
+                            {% if user.resort_profile_image %}
+                                <img src="{{ url_for('static', filename=user.resort_profile_image) }}" alt="Resort Profile" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">
+                            {% else %}
+                                <div style="width: 80px; height: 80px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; color: #888;">No Image</div>
+                            {% endif %}
+                            <br>
+                            <button onclick="document.getElementById('resort-profile-upload').click()" class="modern-button" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Change Resort Profile</button>
+                        </div>
+
+                        <div class="info-label">Resort Background Image</div>
+                        <div class="info-value">
+                            {% if user.resort_background_image %}
+                                <img src="{{ url_for('static', filename=user.resort_background_image) }}" alt="Resort Background" style="width: 120px; height: 60px; object-fit: cover; border-radius: 8px; margin-bottom: 8px;">
+                            {% else %}
+                                <div style="width: 120px; height: 60px; background: #f0f0f0; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 8px; color: #888; font-size: 0.8rem;">No Image</div>
+                            {% endif %}
+                            <br>
+                            <button onclick="document.getElementById('resort-background-upload').click()" class="modern-button" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">Change Resort Background</button>
+                        </div>
+
+                        <!-- keep emergency/contact fields (may be None for owners) -->
+                        <div class="info-label">Emergency Contact Name</div>
+                        <div class="info-value">{{ user.emergency_name }}</div>
+
+                        <div class="info-label">Emergency Contact Number</div>
+                        <div class="info-value">{{ user.emergency_number }}</div>
+
+                        <div class="info-label">Relationship</div>
+                        <div class="info-value">{{ user.relationship }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file inputs for resort image uploads -->
+    <input type="file" id="resort-profile-upload" accept="image/*" style="display: none;" onchange="uploadResortImage('profile')">
+    <input type="file" id="resort-background-upload" accept="image/*" style="display: none;" onchange="uploadResortImage('background')">
+
+    <script>
+        function editEntranceFee() {
+            const display = document.getElementById('entrance-fee-display');
+            const currentValue = display.textContent.trim();
+            const actualValue = currentValue === 'Not set' ? '' : currentValue;
+            
+            // Create input field
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = actualValue;
+            input.placeholder = 'e.g., ₱100 per person';
+            input.style.cssText = 'padding: 0.4rem; border: 1px solid #ccc; border-radius: 4px; width: 200px;';
+            
+            // Create save button
+            const saveBtn = document.createElement('button');
+            saveBtn.textContent = 'Save';
+            saveBtn.className = 'modern-button';
+            saveBtn.style.cssText = 'font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-left: 8px;';
+            
+            // Create cancel button
+            const cancelBtn = document.createElement('button');
+            cancelBtn.textContent = 'Cancel';
+            cancelBtn.className = 'modern-button';
+            cancelBtn.style.cssText = 'font-size: 0.85rem; padding: 0.4rem 0.8rem; margin-left: 4px; background: #888;';
+            
+            // Replace display with input
+            const parent = display.parentElement;
+            parent.innerHTML = '';
+            parent.appendChild(input);
+            parent.appendChild(saveBtn);
+            parent.appendChild(cancelBtn);
+            
+            input.focus();
+            
+            // Save handler
+            saveBtn.onclick = function() {
+                const newValue = input.value.trim();
+                
+                saveBtn.textContent = 'Saving...';
+                saveBtn.disabled = true;
+                
+                fetch('/update_entrance_fee', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ entrance_fee: newValue })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Error updating entrance fee: ' + (data.error || 'Unknown error'));
+                        location.reload();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error updating entrance fee');
+                    location.reload();
+                });
+            };
+            
+            // Cancel handler
+            cancelBtn.onclick = function() {
+                location.reload();
+            };
+            
+            // Enter key handler
+            input.onkeypress = function(e) {
+                if (e.key === 'Enter') {
+                    saveBtn.click();
+                }
+            };
+        }
+
+        function uploadResortImage(type) {
+            const input = document.getElementById(`resort-${type}-upload`);
+            const file = input.files[0];
+            
+            if (!file) return;
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            // Show loading indicator
+            const button = event.target.previousElementSibling;
+            const originalText = button.textContent;
+            button.textContent = 'Uploading...';
+            button.disabled = true;
+            
+            fetch(`/upload_resort_${type}_image`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page to show the new image
+                    location.reload();
+                } else {
+                    alert('Error uploading image: ' + (data.error || 'Unknown error'));
+                    button.textContent = originalText;
+                    button.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error uploading image');
+                button.textContent = originalText;
+                button.disabled = false;
+            });
+        }
+    </script>
+</body>
+</html>

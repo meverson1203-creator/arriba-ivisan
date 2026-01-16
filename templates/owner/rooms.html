@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        .content {
+            display: flex;
+            width: 100%;
+            height: 90vh;
+            padding: 30px 40px;
+        }
+        .sidebar {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            width: 22%;
+            border: none;
+            margin-right: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 18px;
+            padding: 32px 0 24px 0;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            min-width: 220px;
+            transition: box-shadow 0.2s;
+        }
+        .sidebar h1 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2.5rem;
+            letter-spacing: 1px;
+        }
+        .sidebar a {
+            font-size: 1.15rem;
+            width: 90%;
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .sidebar a:hover {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+        .sidebar a.active {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+        .sidebar a svg {
+            min-width: 22px;
+            min-height: 22px;
+            margin-right: 14px;
+            transition: filter 0.18s;
+        }
+        .sidebar a:hover svg {
+            filter: brightness(0) invert(1);
+        }
+        .sidebar a p {
+            margin-left: 0;
+            font-weight: 600;
+            color: inherit;
+            letter-spacing: 0.5px;
+        }
+        .main {
+            background-color: #fff;
+            width: 100%;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2193b0;
+        }
+        .profile-box {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            height: 100%;
+            flex: 1;       /* allow the box to grow inside .main */
+            min-height: 0; /* necessary so child with overflow can shrink/scroll */
+        }
+        .profile-container {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e3f0ff center/cover no-repeat;
+            border: 2px solid #2193b0;
+            margin-bottom: 16px;
+        }
+        .profile-username {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .modern-button {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0.6rem 1.6rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .user-information {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 28px 18px;
+            min-width: 340px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px 32px;
+            align-items: stretch;
+            height: 100%;
+            overflow: auto;      /* enable vertical scrolling when needed */
+            box-sizing: border-box;
+        }
+        .user-information > div {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            height: 100%;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2px;
+            font-size: 0.98rem;
+        }
+        .info-value {
+            color: #333;
+            margin-bottom: 18px;
+            font-size: 0.97rem;
+            word-break: break-word;
+        }
+        /* Modal styles (kept in same design language) */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 22, 31, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1200;
+            padding: 28px;
+        }
+        .modal-backdrop.show {
+            display: flex;
+        }
+        .modal-panel {
+            width: 100%;
+            max-width: 980px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            padding: 22px 20px;
+            overflow: auto;
+            max-height: 90vh;
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        .modal-header {
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:12px;
+            margin-bottom:16px;
+        }
+        .modal-title { font-size:1.25rem; font-weight:700; color:#2193b0; }
+        .modal-close { background:transparent; border:none; font-size:1.2rem; cursor:pointer; color:#666 }
+
+        /* photo row */
+        .photo-row { display:flex; gap:12px; margin-bottom:18px; }
+        .upload-box {
+            width:96px;
+            height:76px;
+            border-radius:8px;
+            background:#f5f5f6;
+            border:2px dashed #ddd;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:#888;
+            cursor:pointer;
+            overflow:hidden;
+            position:relative;
+        }
+        .upload-box img { width:100%; height:100%; object-fit:cover; display:block; }
+        .upload-box small { font-size:0.82rem; }
+        .upload-input { display:none; }
+    .upload-box.hidden { display:none; }
+    .upload-box.has-image { border-style:solid; border-color: rgba(33,147,176,0.12); }
+
+        /* pill inputs layout */
+        .pill-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
+    .pill-grid .pill.right { grid-column: 2; }
+        .pill { background:#fff; border-radius:999px; padding:12px 16px; border:1px solid #eef2f6; box-shadow:0 2px 8px rgba(33,147,176,0.05); color:#666; }
+        .pill input, .pill textarea { border:none; outline:none; width:100%; background:transparent; font-size:0.95rem; color:#333; }
+        .pill textarea { resize:vertical; }
+
+        .features-list { display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+        .done-row { display:flex; justify-content:flex-end; margin-top:16px; }
+        .modal-done { background:linear-gradient(90deg,#2193b0 0%,#6dd5ed 100%); color:#fff; padding:10px 22px; border-radius:28px; border:none; font-weight:700; cursor:pointer; }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+    
+    <div class="content">
+
+        {% include 'partials/owner_sidebar.html' %}
+
+        <div class="main">
+            <div class="profile-header">
+                <div class="profile-title">Rooms</div>
+                <button class="modern-button" style="float:right; margin-left:auto;" id="addRoomBtn">+ Add Room</button>
+            </div>
+            <div class="rooms-list" style="width:100%;">
+                {% if rooms and rooms|length > 0 %}
+                    {% for room in rooms %}
+                    <div class="room-card" data-room='{{ {'id': room.id|default(0), 'name': room.name|default(''), 'price': room.price|default(''), 'capacity': room.capacity|default(''), 'beds': room.beds|default(''), 'other_feature2': room.other_feature2|default(''), 'other_feature3': room.other_feature3|default(''), 'other_feature5': room.other_feature5|default(''), 'image1': room.image1|default(''), 'image2': room.image2|default(''), 'image3': room.image3|default(''), 'image4': room.image4|default(''), 'image5': room.image5|default('') }|tojson }}' style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
+                        <div style="display:flex;align-items:center;gap:18px;">
+                            {% set thumb = room.image1 or room.image2 or room.image3 or room.image4 or room.image5 %}
+                            <img src="/static/{{ thumb if thumb else 'images/bg.webp' }}" alt="Room Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
+                            <div>
+                                <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">
+                                    {{ room.name }}
+                                    {% if room.status %}
+                                        {% if room.status == 'approved' %}
+                                            <span style="font-size:0.7rem;padding:2px 8px;border-radius:12px;margin-left:8px;font-weight:bold;background:#28a745;color:white;">
+                                                {{ room.status|title }}
+                                            </span>
+                                        {% elif room.status == 'pending' %}
+                                            <span style="font-size:0.7rem;padding:2px 8px;border-radius:12px;margin-left:8px;font-weight:bold;background:#ffa500;color:white;">
+                                                {{ room.status|title }}
+                                            </span>
+                                        {% else %}
+                                            <span style="font-size:0.7rem;padding:2px 8px;border-radius:12px;margin-left:8px;font-weight:bold;background:#dc3545;color:white;">
+                                                {{ room.status|title }}
+                                            </span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                                <div style="color:#555;font-size:0.98rem;">{{ room.beds or '' }} beds · {{ room.capacity or '' }} · {{ room.other_feature2 or '' }}</div>
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button class="modern-button edit-room-btn" data-room-id="{{ room.id }}" style="background:linear-gradient(90deg,#6dd5ed 0%,#2193b0 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Edit</button>
+                            <form method="post" action="{{ url_for('delete_room', room_id=room.id) }}" style="display:inline;">
+                                <button type="submit" class="modern-button" style="background:linear-gradient(90deg,#ff6a6a 0%,#ffb86b 100%);padding:0.4rem 1.2rem;font-size:0.95rem;">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="color:#666;padding:18px 8px;">No rooms found. Add one using the + Add Room button.</div>
+                {% endif %}
+            </div>
+    </div>
+    </div>
+</body>
+<!-- Add Room Modal -->
+<div id="addRoomModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="addRoomTitle">
+        <div class="modal-header">
+            <div class="modal-title" id="addRoomTitle">Add Room</div>
+            <button class="modal-close" id="modalCloseBtn" aria-label="Close">×</button>
+        </div>
+    <form id="addRoomForm" method="post" enctype="multipart/form-data" action="{{ url_for('owner_rooms') }}">
+            <div class="photo-row">
+                <label class="upload-box">
+            <input type="file" name="image1" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+            <input type="file" name="image2" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+            <input type="file" name="image3" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+            <input type="file" name="image4" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+                <label class="upload-box hidden">
+                    <input type="file" name="image5" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                </label>
+            </div>
+
+            <div class="pill-grid">
+                <div class="pill"><input name="room_name" placeholder="Room: Name/Number"/></div>
+                <div class="pill right"><input name="other_feature2" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="price" placeholder="Price"/></div>
+                <div class="pill right"><input name="other_feature3" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="capacity" placeholder="number of person can accommodate"/></div>
+                <div class="pill right"><input name="other_feature5" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="beds" placeholder="number of bed"/></div>
+            </div>
+
+            <div class="done-row">
+                <button type="submit" class="modal-done" id="modalDoneBtn">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+        const addRoomBtn = document.getElementById('addRoomBtn');
+        const modal = document.getElementById('addRoomModal');
+        const closeBtn = document.getElementById('modalCloseBtn');
+        const doneBtn = document.getElementById('modalDoneBtn');
+
+        function openModal(){
+            modal.classList.add('show');
+            modal.setAttribute('aria-hidden','false');
+            // focus the first input for keyboard users
+            setTimeout(()=>{
+                const first = modal.querySelector('input, textarea');
+                if(first) first.focus();
+            },50);
+        }
+        function closeModal(){
+            modal.classList.remove('show');
+            modal.setAttribute('aria-hidden','true');
+        }
+
+        addRoomBtn && addRoomBtn.addEventListener('click', openModal);
+        closeBtn && closeBtn.addEventListener('click', closeModal);
+        doneBtn && doneBtn.addEventListener('click', ()=>{
+            // basic UI behavior: close modal. Hook form submit here later.
+            closeModal();
+        });
+
+        // close on backdrop click
+        modal.addEventListener('click', (e)=>{
+            if(e.target === modal) closeModal();
+        });
+
+        // close on ESC
+        document.addEventListener('keydown', (e)=>{
+            if(e.key === 'Escape' && modal.classList.contains('show')) closeModal();
+        });
+
+        // image preview handling and reveal next uploader
+        const inputs = Array.from(document.querySelectorAll('.upload-input'));
+        inputs.forEach((input, idx) => {
+            input.addEventListener('change', (ev)=>{
+                const file = ev.target.files && ev.target.files[0];
+                const label = ev.target.closest('.upload-box');
+                if(!file || !label) return;
+                const reader = new FileReader();
+                reader.onload = function(e){
+                    // keep the input element so user can change file later
+                    // remove only the small placeholder text
+                    const small = label.querySelector('small');
+                    if(small) small.remove();
+                    // if an img already exists, update src, else create it
+                    let img = label.querySelector('img');
+                    if(!img){
+                        img = document.createElement('img');
+                        // insert img before input so input remains in DOM
+                        label.insertBefore(img, label.firstChild);
+                    }
+                    img.src = e.target.result;
+                    label.classList.add('has-image');
+                    // reveal next uploader if exists and is hidden
+                    const next = inputs[idx+1];
+                    if(next){
+                        const nextLabel = next.closest('.upload-box');
+                        if(nextLabel && nextLabel.classList.contains('hidden')){
+                            nextLabel.classList.remove('hidden');
+                        }
+                    }
+                }
+                reader.readAsDataURL(file);
+            });
+        });
+    })();
+</script>
+</html>
+<!-- Edit Room Modal -->
+<div id="editRoomModal" class="modal-backdrop" aria-hidden="true">
+    <div class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="editRoomTitle">
+        <div class="modal-header">
+            <div class="modal-title" id="editRoomTitle">Edit Room</div>
+            <button class="modal-close" id="editModalCloseBtn" aria-label="Close">×</button>
+        </div>
+        <form id="editRoomForm" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="_method" value="post">
+            <div class="photo-row" id="editPhotoRow">
+                {% for i in range(1,6) %}
+                <label class="upload-box" data-index="{{ i }}">
+                    <input type="file" name="image{{ i }}" accept="image/*" class="upload-input" data-preview-target>
+                    <small>Upload Photo</small>
+                    <button type="button" class="remove-image-x" aria-label="Remove image" style="position:absolute;right:6px;top:6px;display:none;background:rgba(0,0,0,0.45);color:#fff;border:none;border-radius:12px;width:22px;height:22px;align-items:center;justify-content:center;cursor:pointer;">×</button>
+                    <input type="hidden" name="delete_image{{ i }}" value="0">
+                </label>
+                {% endfor %}
+            </div>
+            <div class="pill-grid">
+                <div class="pill"><input name="room_name" placeholder="Room: Name/Number"/></div>
+                <div class="pill right"><input name="other_feature2" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="price" placeholder="Price"/></div>
+                <div class="pill right"><input name="other_feature3" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="capacity" placeholder="number of person can accommodate"/></div>
+                <div class="pill right"><input name="other_feature5" placeholder="Other feature ..."/></div>
+                <div class="pill"><input name="beds" placeholder="number of bed"/></div>
+            </div>
+
+            <div class="done-row">
+                <button type="submit" class="modal-done">Save</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // edit modal logic
+        const editModal = document.getElementById('editRoomModal');
+        const editForm = document.getElementById('editRoomForm');
+        const editClose = document.getElementById('editModalCloseBtn');
+
+        function openEditModal(room){
+            // set form action
+            editForm.action = '/owner/rooms/edit/' + room.id;
+            // populate fields
+            editForm.room_name.value = room.name || '';
+            editForm.price.value = room.price || '';
+            editForm.capacity.value = room.capacity || '';
+            editForm.beds.value = room.beds || '';
+            editForm.other_feature2.value = room.other_feature2 || '';
+            editForm.other_feature3.value = room.other_feature3 || '';
+            editForm.other_feature5.value = room.other_feature5 || '';
+
+            // populate previews: remove existing imgs then add if available
+            const inputs = Array.from(editForm.querySelectorAll('.upload-input'));
+            inputs.forEach((input, idx)=>{
+                const label = input.closest('.upload-box');
+                const existingImg = label.querySelector('img');
+                if(existingImg) existingImg.remove();
+                // reset delete flag
+                const del = label.querySelector('input[type="hidden"][name="delete_image'+(idx+1)+'"]');
+                if(del) del.value = '0';
+                const path = room['image'+(idx+1)];
+                if(path){
+                    const img = document.createElement('img');
+                    img.src = '/static/' + path;
+                    label.insertBefore(img, label.firstChild);
+                    if(label.querySelector('small')) label.querySelector('small').remove();
+                    label.classList.add('has-image');
+                    // show X button
+                    const x = label.querySelector('.remove-image-x');
+                    if(x) x.style.display = 'flex';
+                } else {
+                    const x = label.querySelector('.remove-image-x');
+                    if(x) x.style.display = 'none';
+                }
+            });
+
+            // attach X button handlers and input change handlers
+            Array.from(editForm.querySelectorAll('.remove-image-x')).forEach((btn)=>{
+                btn.addEventListener('click', (e)=>{
+                    const label = btn.closest('.upload-box');
+                    // set hidden delete flag
+                    const idx = label.getAttribute('data-index');
+                    const del = label.querySelector('input[type="hidden"][name="delete_image'+idx+'"]');
+                    if(del) del.value = '1';
+                    // remove preview img if any
+                    const img = label.querySelector('img');
+                    if(img) img.remove();
+                    // show the small placeholder again
+                    if(!label.querySelector('small')){
+                        const s = document.createElement('small'); s.textContent = 'Upload Photo'; label.appendChild(s);
+                    }
+                    btn.style.display = 'none';
+                });
+            });
+
+            inputs.forEach((input, idx)=>{
+                input.addEventListener('change', (ev)=>{
+                    const file = ev.target.files && ev.target.files[0];
+                    const label = ev.target.closest('.upload-box');
+                    const small = label.querySelector('small');
+                    if(file){
+                        // reset delete flag since user chose a new file
+                        const del = label.querySelector('input[type="hidden"][name="delete_image'+(idx+1)+'"]');
+                        if(del) del.value = '0';
+                        const reader = new FileReader();
+                        reader.onload = function(e){
+                            const existing = label.querySelector('img'); if(existing) existing.remove();
+                            const img = document.createElement('img'); img.src = e.target.result; label.insertBefore(img, label.firstChild);
+                            if(small) small.remove();
+                            label.classList.add('has-image');
+                            const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex';
+                        }
+                        reader.readAsDataURL(file);
+                    }
+                });
+            });
+
+            editModal.classList.add('show');
+            editModal.setAttribute('aria-hidden','false');
+        }
+
+        function closeEditModal(){
+            editModal.classList.remove('show');
+            editModal.setAttribute('aria-hidden','true');
+        }
+
+        document.querySelectorAll('.edit-room-btn').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+                const id = btn.getAttribute('data-room-id');
+                // fetch room data from DOM elements to avoid extra request; we embed dataset below
+                const row = btn.closest('.room-card');
+                const room = JSON.parse(row.getAttribute('data-room'));
+                openEditModal(room);
+            });
+        });
+
+        editClose && editClose.addEventListener('click', closeEditModal);
+        editModal && editModal.addEventListener('click', (e)=>{ if(e.target===editModal) closeEditModal(); });
+
+    })();
+</script>
