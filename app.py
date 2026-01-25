@@ -12,17 +12,7 @@ app.config['SECRET_KEY'] = 'your_secret_key_here'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Database configuration
-database_url = os.environ.get('DATABASE_URL')
-if database_url:
-    app.config['SQLALCHEMY_DATABASE_URI'] = database_url
-else:
-    # ensure instance folder exists (so the sqlite file can be created there)
-    INSTANCE_DIR = os.path.join(BASE_DIR, 'instance')
-    os.makedirs(INSTANCE_DIR, exist_ok=True)
-    # SQLAlchemy DB (store under instance/ to match view_db.py)
-    # Use absolute path so SQLAlchemy can open the file regardless of CWD
-    DB_FILE = os.path.join(INSTANCE_DIR, 'site.db')
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DB_FILE.replace('\\','/')}"
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # file upload settings
@@ -243,6 +233,19 @@ class Notification(db.Model):
     related_user = db.relationship('User', foreign_keys=[related_user_id])
     related_owner = db.relationship('Owner', foreign_keys=[related_owner_id])
     related_reservation = db.relationship('Reservation', foreign_keys=[related_reservation_id])
+
+
+# Create all database tables
+with app.app_context():
+    db.create_all()
+    # Ensure default admin exists
+    admin = Admin.query.filter_by(username='admin').first()
+    if not admin:
+        hashed_pw = generate_password_hash('admin123')
+        new_admin = Admin(username='admin', password=hashed_pw, name='Administrator', email='admin@example.com')
+        db.session.add(new_admin)
+        db.session.commit()
+        print("Default admin created: username='admin', password='admin123'")
 
 
 def allowed_file(filename):
@@ -1386,6 +1389,26 @@ def admin_chats():
         flash('You must be logged in as admin to view that page.', 'danger')
         return redirect(url_for('home'))
     
+    # Handle starting a new conversation
+    recipient_id = request.args.get('recipient_id')
+    recipient_type = request.args.get('recipient_type')
+    if recipient_id and recipient_type:
+        recipient_id = int(recipient_id)
+        if recipient_type == 'user':
+            conv = AdminConversation.query.filter_by(user_id=recipient_id, admin_id=session['admin_id']).first()
+            if not conv:
+                conv = AdminConversation(user_id=recipient_id, admin_id=session['admin_id'])
+                db.session.add(conv)
+                db.session.commit()
+        elif recipient_type == 'owner':
+            conv = AdminConversation.query.filter_by(owner_id=recipient_id, admin_id=session['admin_id']).first()
+            if not conv:
+                conv = AdminConversation(owner_id=recipient_id, admin_id=session['admin_id'])
+                db.session.add(conv)
+                db.session.commit()
+        if conv:
+            return redirect(url_for('admin_chats', conversation_id=conv.id))
+    
     # Load admin conversations
     admin_convs = AdminConversation.query.filter_by(admin_id=session['admin_id']).order_by(AdminConversation.created_at.desc()).all()
     conversations = []
@@ -1611,6 +1634,81 @@ def admin_approve_offer():
         return jsonify({'success': True, 'message': f'{offer_type.title()} disapproved and removed successfully'})
     
     return jsonify({'success': False, 'message': 'Invalid action'}), 400
+
+
+@app.route('/api/admin/delete_user/<int:user_id>', methods=['DELETE'])
+def api_admin_delete_user(user_id):
+    if 'admin_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    user = db.session.get(User, user_id)
+    if not user:
+        return jsonify({'success': False, 'message': 'User not found'}), 404
+    
+    try:
+        # Delete related records
+        # First, get conversation ids for this user
+        conv_ids = [c.id for c in Conversation.query.filter_by(user_id=user_id).all()]
+        if conv_ids:
+            Message.query.filter(Message.conversation_id.in_(conv_ids)).delete()
+        
+        # Get admin conversation ids for this user
+        admin_conv_ids = [c.id for c in AdminConversation.query.filter_by(user_id=user_id).all()]
+        if admin_conv_ids:
+            Message.query.filter(Message.admin_conversation_id.in_(admin_conv_ids)).delete()
+        
+        Conversation.query.filter_by(user_id=user_id).delete()
+        Reservation.query.filter_by(user_id=user_id).delete()
+        AdminConversation.query.filter_by(user_id=user_id).delete()
+        Notification.query.filter_by(related_user_id=user_id).delete()
+        Message.query.filter_by(sender_user_id=user_id).delete()
+        
+        db.session.delete(user)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'User deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@app.route('/api/admin/delete_owner/<int:owner_id>', methods=['DELETE'])
+def api_admin_delete_owner(owner_id):
+    if 'admin_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'}), 401
+    
+    owner = db.session.get(Owner, owner_id)
+    if not owner:
+        return jsonify({'success': False, 'message': 'Owner not found'}), 404
+    
+    try:
+        # Delete related records
+        # First, get conversation ids for this owner
+        conv_ids = [c.id for c in Conversation.query.filter_by(owner_id=owner_id).all()]
+        if conv_ids:
+            Message.query.filter(Message.conversation_id.in_(conv_ids)).delete()
+        
+        # Get admin conversation ids for this owner
+        admin_conv_ids = [c.id for c in AdminConversation.query.filter_by(owner_id=owner_id).all()]
+        if admin_conv_ids:
+            Message.query.filter(Message.admin_conversation_id.in_(admin_conv_ids)).delete()
+        
+        Conversation.query.filter_by(owner_id=owner_id).delete()
+        Room.query.filter_by(owner_id=owner_id).delete()
+        Cottage.query.filter_by(owner_id=owner_id).delete()
+        Food.query.filter_by(owner_id=owner_id).delete()
+        Activity.query.filter_by(owner_id=owner_id).delete()
+        Reservation.query.filter_by(owner_id=owner_id).delete()
+        AdminConversation.query.filter_by(owner_id=owner_id).delete()
+        Notification.query.filter_by(related_owner_id=owner_id).delete()
+        Message.query.filter_by(sender_owner_id=owner_id).delete()
+        
+        db.session.delete(owner)
+        db.session.commit()
+        return jsonify({'success': True, 'message': 'Owner deleted successfully'})
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 
 @app.route('/owner/update-resort-images', methods=['POST'])
 def update_resort_images():
@@ -2627,14 +2725,5 @@ def view_resort_activities():
     return render_template('viewResortActivities.html', owner=owner, activities=activities)
 
 if __name__ == '__main__':
-    with app.app_context():
-        db.create_all()
-        # Ensure default admin exists
-        default_admin = Admin.query.filter_by(username='admin').first()
-        if not default_admin:
-            hashed = generate_password_hash('password')
-            admin = Admin(username='admin', password=hashed, name='Administrator', email='admin@example.com')
-            db.session.add(admin)
-            db.session.commit()
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)

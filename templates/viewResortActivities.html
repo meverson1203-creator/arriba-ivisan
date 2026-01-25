@@ -362,7 +362,14 @@
     </style>
 </head>
 <body>
-    {% if session.user_id %}
+    {% if session.admin_id %}
+        <div class="navbar">
+            <p class="title">🏖️ Arriba Ivisan</p>
+            <div class="nav-links">
+                <a href="{{ url_for('admin_owners') }}">Back</a>
+            </div>
+        </div>
+    {% elif session.user_id %}
         {% include 'partials/navbarLoggedInCustomer.html' %}
     {% elif session.owner_id %}
         {% include 'partials/navbarLoggedInOwner.html' %}
