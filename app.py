@@ -32,6 +32,26 @@ cloudinary.config(
     api_secret=os.environ.get('CLOUDINARY_API_SECRET')
 )
 
+# Jinja2 filter for image URLs
+@app.template_filter('image_url')
+def image_url_filter(image_path):
+    """
+    Jinja2 filter to handle both Cloudinary URLs and local static paths.
+    
+    If image_path starts with http/https, return it as-is (Cloudinary URL).
+    Otherwise, treat it as a relative path and use url_for('static').
+    If image_path is None or empty, return None.
+    """
+    if not image_path:
+        return None
+    
+    # Check if it's already a full URL (Cloudinary)
+    if image_path.startswith(('http://', 'https://')):
+        return image_path
+    
+    # Otherwise, treat as local static file
+    return url_for('static', filename=image_path)
+
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)

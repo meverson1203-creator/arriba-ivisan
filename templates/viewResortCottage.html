@@ -484,9 +484,9 @@
     <div class="content">
         <div class="resort-header">
             {# show resort cover image if owner has one or fallback to placeholder #}
-            {% set cover = owner.cover_photo if owner and owner.cover_photo else None %}
+            {% set cover = owner.resort_profile_image if owner and owner.resort_profile_image else None %}
             {% if cover %}
-                <img src="{{ url_for('static', filename=cover) }}" alt="{{ owner.resort_name }}">
+                <img src="{{ cover | image_url }}" alt="{{ owner.resort_name }}">
             {% else %}
                 <img src="{{ url_for('static', filename='images/defaults/resort.svg') }}" alt="Resort">
             {% endif %}
@@ -567,7 +567,7 @@
                         {# choose first available image for the cottage #}
                         {% set cottage_img = cottage.image1 or cottage.image2 or cottage.image3 or cottage.image4 or cottage.image5 %}
                         {% if cottage_img %}
-                            <img src="{{ url_for('static', filename=cottage_img) }}" alt="{{ cottage.name }}">
+                            <img src="{{ cottage_img | image_url }}" alt="{{ cottage.name }}">
                         {% else %}
                             <img src="{{ url_for('static', filename='images/defaults/cottage.svg') }}" alt="Cottage">
                         {% endif %}
@@ -591,7 +591,7 @@
                                     {% for img in _imgs %}
                                         {% if img %}
                                             <div>
-                                                <img class="cottage-thumb" src="{{ url_for('static', filename=img) }}" alt="{{ cottage.name }} image {{ loop.index }}" />
+                                                <img class="cottage-thumb" src="{{ img | image_url }}" alt="{{ cottage.name }} image {{ loop.index }}" />
                                             </div>
                                         {% endif %}
                                     {% endfor %}

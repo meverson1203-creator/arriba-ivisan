@@ -55,7 +55,7 @@
                     {% if conversations and conversations|length > 0 %}
                         {% for conv in conversations %}
                             <div class="person" data-conversation-id="{{ conv.id }}" data-owner-id="{{ conv.owner_id }}">
-                                <img class="avatar" src="{{ url_for('static', filename=conv.partner_avatar) if conv.partner_avatar else url_for('static', filename='images/defaults/chat-avatar.svg') }}" alt="avatar">
+                                <img class="avatar" src="{{ conv.partner_avatar | image_url or url_for('static', filename='images/defaults/chat-avatar.svg') }}" alt="avatar">
                                 <div class="meta">
                                     <div class="name">{{ conv.partner_name }}</div>
                                     <div class="preview">{{ conv.last_text or 'Start a conversation' }}</div>

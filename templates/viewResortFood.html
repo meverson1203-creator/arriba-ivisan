@@ -380,9 +380,9 @@
     <div class="content">
         <div class="resort-header">
             {# show resort cover image if owner has one or fallback to placeholder #}
-            {% set cover = owner.cover_photo if owner and owner.cover_photo else None %}
+            {% set cover = owner.resort_profile_image if owner and owner.resort_profile_image else None %}
             {% if cover %}
-                <img src="{{ url_for('static', filename=cover) }}" alt="{{ owner.resort_name }}">
+                <img src="{{ cover | image_url }}" alt="{{ owner.resort_name }}">
             {% else %}
                 <img src="{{ url_for('static', filename='images/defaults/resort.svg') }}" alt="Resort">
             {% endif %}
@@ -426,7 +426,7 @@
                         {# choose first available image for the food #}
                         {% set food_img = food.image1 or food.image2 or food.image3 or food.image4 or food.image5 %}
                         {% if food_img %}
-                            <img src="{{ url_for('static', filename=food_img) }}" alt="{{ food.name }}">
+                            <img src="{{ food_img | image_url }}" alt="{{ food.name }}">
                         {% else %}
                             <img src="{{ url_for('static', filename='images/defaults/food.svg') }}" alt="Food">
                         {% endif %}
@@ -450,7 +450,7 @@
                                     {% for img in _imgs %}
                                         {% if img %}
                                             <div>
-                                                <img class="food-thumb" src="{{ url_for('static', filename=img) }}" alt="{{ food.name }} image {{ loop.index }}" />
+                                                <img class="food-thumb" src="{{ img | image_url }}" alt="{{ food.name }} image {{ loop.index }}" />
                                             </div>
                                         {% endif %}
                                     {% endfor %}
