@@ -297,7 +297,7 @@
                     <div class="activity-card" data-activity='{{ {'id': activity.id|default(0), 'name': activity.name|default(''), 'size': activity.size|default(''), 'capacity': activity.capacity|default(''), 'price': activity.price|default(''), 'other_feature1': activity.other_feature1|default(''), 'other_feature2': activity.other_feature2|default(''), 'other_feature3': activity.other_feature3|default(''), 'other_feature4': activity.other_feature4|default(''), 'image1': activity.image1|default(''), 'image2': activity.image2|default(''), 'image3': activity.image3|default(''), 'image4': activity.image4|default(''), 'image5': activity.image5|default('') }|tojson }}' style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
                         <div style="display:flex;align-items:center;gap:18px;">
                             {% set thumb = activity.image1 or activity.image2 or activity.image3 or activity.image4 or activity.image5 %}
-                            <img src="/static/{{ thumb if thumb else 'images/bg.webp' }}" alt="Activity Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
+                            <img src="{{ thumb | image_url or url_for('static', filename='images/bg.webp') }}" alt="Activity Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
                             <div>
                                 <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">
                                     {{ activity.name }}
@@ -475,7 +475,7 @@
                     const existingImg = label.querySelector('img'); if(existingImg) existingImg.remove();
                     const del = label.querySelector('input[type="hidden"][name="delete_image'+(idx+1)+'"]'); if(del) del.value='0';
                     const path = food['image'+(idx+1)];
-                    if(path){ const img = document.createElement('img'); img.src = '/static/' + path; label.insertBefore(img, label.firstChild); if(label.querySelector('small')) label.querySelector('small').remove(); label.classList.add('has-image'); const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex'; }
+                    if(path){ const img = document.createElement('img'); img.src = path.startsWith('http') ? path : '/static/' + path; label.insertBefore(img, label.firstChild); if(label.querySelector('small')) label.querySelector('small').remove(); label.classList.add('has-image'); const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex'; }
                     else { const x = label.querySelector('.remove-image-x'); if(x) x.style.display='none'; }
                 });
 

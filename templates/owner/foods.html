@@ -297,7 +297,7 @@
                     <div class="food-card" data-food='{{ {'id': food.id|default(0), 'name': food.name|default(''), 'size': food.size|default(''), 'capacity': food.capacity|default(''), 'price': food.price|default(''), 'other_feature1': food.other_feature1|default(''), 'other_feature2': food.other_feature2|default(''), 'other_feature3': food.other_feature3|default(''), 'other_feature4': food.other_feature4|default(''), 'image1': food.image1|default(''), 'image2': food.image2|default(''), 'image3': food.image3|default(''), 'image4': food.image4|default(''), 'image5': food.image5|default('') }|tojson }}' style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
                         <div style="display:flex;align-items:center;gap:18px;">
                             {% set thumb = food.image1 or food.image2 or food.image3 or food.image4 or food.image5 %}
-                            <img src="/static/{{ thumb if thumb else 'images/bg.webp' }}" alt="Food Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
+                            <img src="{{ thumb | image_url or url_for('static', filename='images/bg.webp') }}" alt="Food Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
                             <div>
                                 <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">
                                     {{ food.name }}
@@ -476,7 +476,7 @@
                     const existingImg = label.querySelector('img'); if(existingImg) existingImg.remove();
                     const del = label.querySelector('input[type="hidden"][name="delete_image'+(idx+1)+'"]'); if(del) del.value='0';
                     const path = food['image'+(idx+1)];
-                    if(path){ const img = document.createElement('img'); img.src = '/static/' + path; label.insertBefore(img, label.firstChild); if(label.querySelector('small')) label.querySelector('small').remove(); label.classList.add('has-image'); const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex'; }
+                    if(path){ const img = document.createElement('img'); img.src = path.startsWith('http') ? path : '/static/' + path; label.insertBefore(img, label.firstChild); if(label.querySelector('small')) label.querySelector('small').remove(); label.classList.add('has-image'); const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex'; }
                     else { const x = label.querySelector('.remove-image-x'); if(x) x.style.display='none'; }
                 });
 

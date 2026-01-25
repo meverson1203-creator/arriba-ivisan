@@ -297,7 +297,7 @@
                     <div class="room-card" data-room='{{ {'id': room.id|default(0), 'name': room.name|default(''), 'price': room.price|default(''), 'capacity': room.capacity|default(''), 'beds': room.beds|default(''), 'other_feature2': room.other_feature2|default(''), 'other_feature3': room.other_feature3|default(''), 'other_feature5': room.other_feature5|default(''), 'image1': room.image1|default(''), 'image2': room.image2|default(''), 'image3': room.image3|default(''), 'image4': room.image4|default(''), 'image5': room.image5|default('') }|tojson }}' style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
                         <div style="display:flex;align-items:center;gap:18px;">
                             {% set thumb = room.image1 or room.image2 or room.image3 or room.image4 or room.image5 %}
-                            <img src="/static/{{ thumb if thumb else 'images/bg.webp' }}" alt="Room Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
+                            <img src="{{ thumb | image_url or url_for('static', filename='images/bg.webp') }}" alt="Room Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
                             <div>
                                 <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">
                                     {{ room.name }}
@@ -525,7 +525,8 @@
                 const path = room['image'+(idx+1)];
                 if(path){
                     const img = document.createElement('img');
-                    img.src = '/static/' + path;
+                    // Check if path is a full URL (Cloudinary) or relative path
+                    img.src = path.startsWith('http') ? path : '/static/' + path;
                     label.insertBefore(img, label.firstChild);
                     if(label.querySelector('small')) label.querySelector('small').remove();
                     label.classList.add('has-image');

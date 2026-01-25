@@ -297,7 +297,7 @@
                     <div class="cottage-card" data-cottage='{{ {'id': cottage.id|default(0), 'name': cottage.name|default(''), 'price': cottage.price|default(''), 'capacity': cottage.capacity|default(''), 'other_feature2': cottage.other_feature2|default(''), 'other_feature3': cottage.other_feature3|default(''), 'other_feature5': cottage.other_feature5|default(''), 'image1': cottage.image1|default(''), 'image2': cottage.image2|default(''), 'image3': cottage.image3|default(''), 'image4': cottage.image4|default(''), 'image5': cottage.image5|default('') }|tojson }}' style="display:flex;align-items:center;justify-content:space-between;background:#f5faff;border-radius:10px;padding:18px 24px;margin-bottom:18px;box-shadow:0 2px 8px rgba(33,147,176,0.08);">
                         <div style="display:flex;align-items:center;gap:18px;">
                             {% set thumb = cottage.image1 or cottage.image2 or cottage.image3 or cottage.image4 or cottage.image5 %}
-                            <img src="/static/{{ thumb if thumb else 'images/bg.webp' }}" alt="Cottage Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
+                            <img src="{{ thumb | image_url or url_for('static', filename='images/bg.webp') }}" alt="Cottage Image" style="width:70px;height:70px;border-radius:8px;object-fit:cover;border:2px solid #2193b0;">
                             <div>
                                 <div style="font-size:1.2rem;font-weight:bold;color:#2193b0;">
                                     {{ cottage.name }}
@@ -471,7 +471,7 @@
                 const existingImg = label.querySelector('img'); if(existingImg) existingImg.remove();
                 const del = label.querySelector('input[type="hidden"][name="delete_image'+(idx+1)+'"]'); if(del) del.value='0';
                 const path = cottage['image'+(idx+1)];
-                if(path){ const img = document.createElement('img'); img.src = '/static/' + path; label.insertBefore(img, label.firstChild); if(label.querySelector('small')) label.querySelector('small').remove(); label.classList.add('has-image'); const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex'; }
+                if(path){ const img = document.createElement('img'); img.src = path.startsWith('http') ? path : '/static/' + path; label.insertBefore(img, label.firstChild); if(label.querySelector('small')) label.querySelector('small').remove(); label.classList.add('has-image'); const x = label.querySelector('.remove-image-x'); if(x) x.style.display='flex'; }
                 else { const x = label.querySelector('.remove-image-x'); if(x) x.style.display='none'; }
             });
 
