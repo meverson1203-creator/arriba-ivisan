@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        .content {
+            display: flex;
+            width: 100%;
+            height: 90vh;
+            padding: 30px 40px;
+        }
+        .main {
+            background-color: #fff;
+            width: 100%;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+        }
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2193b0;
+        }
+        .profile-box {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            height: 100%;
+        }
+        .profile-container {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e3f0ff center/cover no-repeat;
+            border: 2px solid #2193b0;
+            margin-bottom: 16px;
+        }
+        .profile-username {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .user-information {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 28px 18px;
+            min-width: 340px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px 32px;
+            align-items: stretch;
+            height: 100%;
+        }
+        .user-information > div {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            height: 100%;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2px;
+            font-size: 0.98rem;
+        }
+        .info-value {
+            color: #333;
+            margin-bottom: 18px;
+            font-size: 0.97rem;
+            word-break: break-word;
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+    <div class="content">
+
+        {% include 'partials/user_sidebar.html' %}
+
+        <div class="main">
+            <div class="profile-header">
+                <div class="profile-title">Your Profile Information</div>
+            </div>
+            <div class="profile-box">
+                        <div class="profile-container">
+                            {%- set avatar_url = None -%}
+                            {%- if user.avatar -%}
+                                {%- set avatar_url = url_for('static', filename=user.avatar) -%}
+                            {%- elif session.get('avatar') -%}
+                                {%- set avatar_url = url_for('static', filename=session.get('avatar')) -%}
+                            {%- else -%}
+                                {%- set avatar_url = url_for('static', filename='images/defaults/avatar.svg') -%}
+                            {%- endif -%}
+                            <div class="profile-img" style="background-image: url('{{ avatar_url }}'); background-size: cover; background-position: center"></div>
+                            <h2 style="text-align: center;">{{ user.name }}</h2>
+                            <div class="profile-username">@{{ user.username }}</div>
+                        </div>
+                <div class="user-information">
+                    <div>
+                        <div class="info-label">Email</div>
+                        <div class="info-value">{{ user.email }}</div>
+                        <div class="info-label">Birthdate</div>
+                        <div class="info-value">{{ user.birthdate }}</div>
+                        <div class="info-label">Gender</div>
+                        <div class="info-value">{{ user.gender }}</div>
+                        <div class="info-label">Address</div>
+                        <div class="info-value">{{ user.address }}</div>
+                        <div class="info-label">Age</div>
+                        <div class="info-value">{{ user.age }}</div>
+                    </div>
+                    <div>
+                        <div class="info-label">Contact Number</div>
+                        <div class="info-value">{{ user.contact_number }}</div>
+                        <div class="info-label">Facebook</div>
+                        <div class="info-value">{{ user.facebook }}</div>
+                        <div class="info-label">Emergency Contact Name</div>
+                        <div class="info-value">{{ user.emergency_name }}</div>
+                        <div class="info-label">Emergency Contact Number</div>
+                        <div class="info-value">{{ user.emergency_number }}</div>
+                        <div class="info-label">Relationship</div>
+                        <div class="info-value">{{ user.relationship }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

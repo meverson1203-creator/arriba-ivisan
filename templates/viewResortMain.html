@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            justify-content: center ;
+        }
+
+        .nav-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+
+        .search-container {
+            position: relative;
+            width: 300px;
+        }
+
+        .search {
+            width: 100%;
+            padding: 10px 40px 10px 10px; /* right padding for icon */
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 20px;
+            height: 20px;
+            pointer-events: none;
+            fill: #888;
+        }
+
+        .content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px 0;
+            height: 90vh;
+            overflow-y: scroll;
+        }
+
+        .offer {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: row;
+            width: 1000px;
+            min-height: 300px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative; /* to anchor the view button */
+        }
+
+        .offer:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+
+        .offer img {
+            width: 300px;
+            height: 300px;
+            object-fit: cover;
+            background: #eaeaea;
+            border-top-left-radius: 18px;
+            border-bottom-left-radius: 18px;
+            margin-right: 0;
+        }
+
+        .offer-details {
+            padding: 24px 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding-bottom: 72px; /* space for bottom-right view button */
+        }
+
+        .offer-details h1 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            color: #2a2a2a;
+        }
+        .offer-details .offer-desc {
+            color: #4a4a4a;
+            font-size: 0.98rem;
+            margin-bottom: 12px;
+        }
+        .view-btn {
+            position: absolute;
+            bottom: 24px;
+            right: 24px;
+            padding: 10px 18px;
+            background: #4a90e2;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: background 0.2s, transform 0.1s;
+        }
+        .view-btn:hover { background:#3578c6; transform: translateY(-1px); }
+
+        .resort-header {
+            background: #fff;
+            border-radius: 18px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            overflow: hidden;
+            position: relative;
+            width: 1000px;
+            min-height: 600px;
+            margin-bottom: 20px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        /* .resort-resort-header:hover {
+            transform: translateY(-4px) scale(1.02);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        } */
+
+        .resort-header img {
+            width: 100%;
+            height: 400px;
+            background: #eaeaea;
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+            object-fit: cover;
+        }
+
+        .resort-header-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 400px;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.6) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px;
+            border-top-left-radius: 18px;
+            border-top-right-radius: 18px;
+        }
+
+        .resort-header-details {
+            padding: 24px 20px;
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .resort-header-overlay h1 {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            color: #ffffff;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            font-weight: bold;
+        }
+
+        /* header top layout for title and action */
+        .resort-header-overlay .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .resort-header-overlay .header-bottom {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .message-btn {
+            background: linear-gradient(90deg,#2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+        }
+
+        .message-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+
+        .message-btn svg { height: 18px; width: 18px; vertical-align: middle; }
+
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .stars {
+            color: #FFD700;
+            font-size: 1.5rem;
+        }
+
+        .number-of-reviews {
+            color: #888;
+            font-size: 0.95rem;
+        }
+
+        .resort-header-overlay .rating {
+            margin-bottom: 10px;
+        }
+
+        .resort-header-overlay .stars {
+            color: #FFD700;
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .resort-header-overlay .number-of-reviews {
+            color: #ffffff;
+            font-size: 1.1rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .location {
+            color: #4a90e2;
+            font-size: 1rem;
+            margin-bottom: 12px;
+        }
+
+        .resort-header-overlay .location {
+            color: #ffffff;
+            font-size: 1.2rem;
+            margin-bottom: 0;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .offer-images {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .offer-images > div {
+            width: 130px;
+            height: 130px;
+            background: #f5f5f5;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        .offer-images > div img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+    
+    <div class="content">
+        <div class="resort-header">
+            {% if resort and resort.resort_background_image %}
+                <img src="{{ url_for('static', filename=resort.resort_background_image) }}" alt="Resort Background Image">
+            {% else %}
+                <img src="{{ url_for('static', filename='images/defaults/resort.svg') }}" alt="Resort Image">
+            {% endif %}
+            
+            <div class="resort-header-overlay">
+                <div class="header-top">
+                    <h1>{{ resort.resort_name if resort else 'Resort Name' }}</h1>
+                    <button id="messageBtn" class="message-btn" data-owner="{{ resort.id if resort else '' }}" title="Message owner">
+                        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" fill="#fff"/></svg>
+                        Message
+                    </button>
+                </div>
+                {% if resort and resort.entrance_fee %}
+                <div style="color: #ffffff; font-size: 1.05rem; margin-top: -5px; margin-bottom: 10px; text-shadow: 1px 1px 2px rgba(0,0,0,0.8); font-style: italic;">
+                    {{ resort.entrance_fee }}
+                </div>
+                {% endif %}
+                <div class="header-bottom">
+                    <div class="rating">
+                        <div class="stars">★ ★ ★ ★ ☆</div>
+                        <div class="number-of-reviews">(120 reviews)</div>
+                    </div>
+                    <div class="location">
+                        {{ resort.resort_address if resort else 'Location' }}
+                        <svg style="vertical-align: middle; margin-left: 6px;" width="18" height="18" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2C7.03 2 3 6.03 3 11c0 5.25 7.05 10.74 8.09 11.52a1 1 0 0 0 1.22 0C13.95 21.74 21 16.25 21 11c0-4.97-4.03-9-9-9zm0 17.88C9.14 17.1 5 13.61 5 11c0-3.86 3.14-7 7-7s7 3.14 7 7c0 2.61-4.14 6.1-7 8.88zm0-10.38A2.38 2.38 0 1 0 12 13.88 2.38 2.38 0 0 0 12 7.5z" fill="#ffffff"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="resort-header-details">
+                <div class="offer-images">
+                    {# show latest room image for this resort owner #}
+                    {% set resort_room_img = None %}
+                    {% if resort and resort.rooms and resort.rooms|length > 0 %}
+                        {% set rr = resort.rooms[-1] %}
+                        {% set resort_room_img = rr.image1 or rr.image2 or rr.image3 or rr.image4 or rr.image5 %}
+                    {% endif %}
+                    {% if resort_room_img %}
+                        <div class="room-img">
+                            <img src="{{ url_for('static', filename=resort_room_img) }}" alt="Room">
+                        </div>
+                    {% endif %}
+
+                    {# show latest cottage image for this resort owner #}
+                    {% set resort_cottage_img = None %}
+                    {% if resort and resort.cottages and resort.cottages|length > 0 %}
+                        {% set rc = resort.cottages[-1] %}
+                        {% set resort_cottage_img = rc.image1 or rc.image2 or rc.image3 or rc.image4 or rc.image5 %}
+                    {% endif %}
+                    {% if resort_cottage_img %}
+                        <div class="cottage-img">
+                            <img src="{{ url_for('static', filename=resort_cottage_img) }}" alt="Cottage">
+                        </div>
+                    {% endif %}
+
+                    {# show latest activity image for this resort owner if available #}
+                    {% set resort_activity_img = None %}
+                    {% if activities_with_images and activities_with_images|length > 0 %}
+                        {% set resort_activity_img = activities_with_images[-1] %}
+                    {% endif %}
+                    {% if resort_activity_img %}
+                        <div class="activities-img">
+                            <img src="{{ url_for('static', filename=resort_activity_img) }}" alt="Activity">
+                        </div>
+                    {% endif %}
+
+                    {# show latest food image for this resort owner #}
+                    {% set resort_food_img = None %}
+                    {% if resort and resort.foods and resort.foods|length > 0 %}
+                        {% set rf = resort.foods[-1] %}
+                        {% set resort_food_img = rf.image1 or rf.image2 or rf.image3 or rf.image4 or rf.image5 %}
+                    {% endif %}
+                    {% if resort_food_img %}
+                        <div class="food-img">
+                            <img src="{{ url_for('static', filename=resort_food_img) }}" alt="Food">
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {# Rooms offer: only render if at least one room has an image (provided by server) #}
+        {% if rooms_with_images and rooms_with_images|length > 0 %}
+        <div class="offer" data-owner="{{ resort.id if resort else '' }}">
+            <img src="{{ url_for('static', filename=rooms_with_images[0]) }}" alt="Room">
+            <div class="offer-details">
+                <h1>Rooms</h1>
+                <p class="offer-desc">Browse room photos, amenities, capacity, and pricing.</p>
+                <div class="offer-images">
+                    {# Show up to 4 room images #}
+                    {% for room_img in rooms_with_images[:4] %}
+                        <div class="room-one-img">
+                            <img src="{{ url_for('static', filename=room_img) }}" alt="Room">
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="view-btn" data-view-url="{% if resort %}{{ url_for('view_resort_room') }}?owner_id={{ resort.id }}{% else %}{{ url_for('view_resort_room') }}{% endif %}">View rooms</button>
+            </div>
+    </div>
+    {% endif %}
+        {# Cottages offer: only render if at least one cottage has an image (provided by server) #}
+        {% if cottages_with_images and cottages_with_images|length > 0 %}
+        <div class="offer" data-owner="{{ resort.id if resort else '' }}">
+            <img src="{{ url_for('static', filename=cottages_with_images[0]) }}" alt="Cottage">
+            <div class="offer-details">
+                <h1>Cottages</h1>
+                <p class="offer-desc">See cottage photos, features, capacity, and nightly rates.</p>
+                <div class="offer-images">
+                    {# Show up to 4 cottage images #}
+                    {% for cottage_img in cottages_with_images[:4] %}
+                        <div class="cottage-one-img">
+                            <img src="{{ url_for('static', filename=cottage_img) }}" alt="Cottage">
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="view-btn" data-view-url="{% if resort %}{{ url_for('view_resort_cottage') }}?owner_id={{ resort.id }}{% else %}{{ url_for('view_resort_cottage') }}{% endif %}">View cottages</button>
+            </div>
+        </div>
+        {% endif %}
+        {# Activities offer: only render if at least one activity has an image (provided by server) #}
+        {% if activities_with_images and activities_with_images|length > 0 %}
+        <div class="offer" data-owner="{{ resort.id if resort else '' }}">
+            <img src="{{ url_for('static', filename=activities_with_images[0]) }}" alt="Activities">
+            <div class="offer-details">
+                <h1>Activities</h1>
+                <p class="offer-desc">Discover on-site activities with photos, pricing, and details.</p>
+                <div class="offer-images">
+                    {# Show up to 4 activity images #}
+                    {% for act_img in activities_with_images[:4] %}
+                        <div class="activity-one-img">
+                            <img src="{{ url_for('static', filename=act_img) }}" alt="Activity">
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="view-btn" data-view-url="{% if resort %}{{ url_for('view_resort_activities') }}?owner_id={{ resort.id }}{% else %}{{ url_for('view_resort_activities') }}{% endif %}">View activities</button>
+            </div>
+        </div>
+        {% endif %}
+        {# Foods offer: only render if at least one food has an image (provided by server) #}
+        {% if foods_with_images and foods_with_images|length > 0 %}
+        <div class="offer" data-owner="{{ resort.id if resort else '' }}">
+            <img src="{{ url_for('static', filename=foods_with_images[0]) }}" alt="Food">
+            <div class="offer-details">
+                <h1>Foods</h1>
+                <p class="offer-desc">Explore the menu and food photos, sizes, and prices.</p>
+                <div class="offer-images">
+                    {# Show up to 4 food images #}
+                    {% for food_img in foods_with_images[:4] %}
+                        <div class="food-one-img">
+                            <img src="{{ url_for('static', filename=food_img) }}" alt="Food">
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="view-btn" data-view-url="{% if resort %}{{ url_for('view_resort_food') }}?owner_id={{ resort.id }}{% else %}{{ url_for('view_resort_food') }}{% endif %}">View foods</button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <script>
+        (function(){
+            const btn = document.getElementById('messageBtn');
+            if(!btn) return;
+            btn.addEventListener('click', async function(){
+                const ownerId = btn.getAttribute('data-owner');
+                if(!ownerId) return;
+                try{
+                    const resp = await fetch('/api/conversation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ owner_id: parseInt(ownerId,10) })
+                    });
+                    const data = await resp.json();
+                    if(data && data.success){
+                        // redirect user to chats page and include conversation id
+                        // if current session is owner, redirect to owner chat page
+                        // best-effort: navigate to user chat by default
+                        const base = window.location.origin + (window.location.pathname.startsWith('/viewResortMain') ? '' : '');
+                        // decide destination depending on whether current page contains 'owner/' in session template
+                        // we'll redirect to /user/chats by default
+                        window.location.href = '/user/chats?conversation_id=' + data.conversation_id;
+                    } else {
+                        alert(data.message || 'Unable to create conversation');
+                    }
+                } catch(err){
+                    console.error(err);
+                    alert('Failed to start conversation');
+                }
+            });
+        })();
+
+        // Attach click handlers for "View more" buttons
+        (function(){
+            document.querySelectorAll('.view-btn[data-view-url]').forEach(function(b){
+                b.addEventListener('click', function(){
+                    const url = b.getAttribute('data-view-url');
+                    if(url){ window.location.href = url; }
+                });
+            });
+        })();
+    </script>
+</body>
+</html>

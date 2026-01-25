@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Profile</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            height: 100vh;
+            background: #CCFED8;
+            background: linear-gradient(90deg, rgba(204, 254, 216, 1) 0%, rgba(148, 185, 255, 1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+        }
+        .nav-links a {
+            margin-left: 20px;
+            text-decoration: none;
+            color: #333;
+            font-weight: bold;
+        }
+        .content {
+            display: flex;
+            width: 100%;
+            height: 90vh;
+            padding: 30px 40px;
+        }
+        .sidebar {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            width: 22%;
+            border: none;
+            margin-right: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 18px;
+            padding: 32px 0 24px 0;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            min-width: 220px;
+            transition: box-shadow 0.2s;
+        }
+        .sidebar h1 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2.5rem;
+            letter-spacing: 1px;
+        }
+        .sidebar a {
+            font-size: 1.15rem;
+            width: 90%;
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .sidebar a:hover {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+        .sidebar a.active {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+        .sidebar a svg {
+            min-width: 22px;
+            min-height: 22px;
+            margin-right: 14px;
+            transition: filter 0.18s;
+        }
+        .sidebar a:hover svg {
+            filter: brightness(0) invert(1);
+        }
+        .sidebar a p {
+            margin-left: 0;
+            font-weight: 600;
+            color: inherit;
+            letter-spacing: 0.5px;
+        }
+        .main {
+            background-color: #fff;
+            width: 100%;
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-title {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2193b0;
+        }
+        .profile-box {
+            display: flex;
+            flex-direction: row;
+            gap: 40px;
+            height: 100%;
+            flex: 1;       /* allow the box to grow inside .main */
+            min-height: 0; /* necessary so child with overflow can shrink/scroll */
+        }
+        .profile-container {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 32px 24px;
+            min-width: 260px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .profile-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #e3f0ff center/cover no-repeat;
+            border: 2px solid #2193b0;
+            margin-bottom: 16px;
+        }
+        .profile-username {
+            color: #888;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        .modern-button {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: bold;
+            padding: 0.6rem 1.6rem;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .user-information {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            padding: 28px 18px;
+            min-width: 340px;
+            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px 32px;
+            align-items: stretch;
+            height: 100%;
+            overflow: auto;      /* enable vertical scrolling when needed */
+            box-sizing: border-box;
+        }
+        .user-information > div {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            height: 100%;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2px;
+            font-size: 0.98rem;
+        }
+        .info-value {
+            color: #333;
+            margin-bottom: 18px;
+            font-size: 0.97rem;
+            word-break: break-word;
+        }
+        
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: bold;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+        .notification.show {
+            transform: translateX(0);
+        }
+        .notification.success {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+        .notification.error {
+            background: linear-gradient(135deg, #f44336, #da190b);
+        }
+        .notification.info {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+        }
+
+        /* Send Message Button Hover Effect */
+        .send-message-btn {
+            transition: all 0.3s ease;
+        }
+        .send-message-btn:hover {
+            background: #218838 !important;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+        }
+        .send-message-btn:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+    
+    <div class="content">
+
+        {% include 'partials/owner_sidebar.html' %}
+
+        <div class="main">
+            <div class="profile-header">
+                <span class="profile-title">Customer Reservations</span>
+            </div>
+            <div class="reservations-list" id="reservationsList" style="width:100%;">
+                {% if reservations and reservations|length > 0 %}
+                    {% for r in reservations %}
+                        <div class="reservation-card" data-reservation-id="{{ r.id }}" style="background:linear-gradient(135deg,#f5faff 0%,#e3f0ff 100%);border-radius:14px;box-shadow:0 2px 12px rgba(33,147,176,0.08);padding:22px 18px;margin-bottom:18px;display:flex;flex-direction:column;">
+                            <div style="display:flex;justify-content:space-between;align-items:center;">
+                                <span style="font-weight:bold;color:#2193b0;font-size:1.15rem;">{{ r.title }}</span>
+                                <span style="color:#888;font-size:0.98rem;">Customer: {{ r.user_name }}</span>
+                            </div>
+                            <div style="margin-top:8px;color:#333;font-size:0.97rem;">Date: {{ r.check_in }} to {{ r.check_out }}<br>Status: <strong id="status-{{ r.id }}">{{ r.status|capitalize }}</strong></div>
+                            <div style="margin-top:10px; display:flex; gap:10px;">
+                                {% if r.status != 'confirmed' %}
+                                    <button class="owner-action-btn" data-reservation-id="{{ r.id }}" data-action="confirm" style="background:#2193b0;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;">Confirm</button>
+                                {% endif %}
+                                {% if r.status != 'cancelled' %}
+                                    <button class="owner-action-btn" data-reservation-id="{{ r.id }}" data-action="cancel" style="background:#fff;border:1px solid #ffd6d6;color:#a50b0b;padding:8px 12px;border-radius:8px;cursor:pointer;">Cancel</button>
+                                {% endif %}
+                                <button class="send-message-btn" data-user-id="{{ r.user_id }}" data-user-name="{{ r.user_name }}" style="background:#28a745;color:#fff;padding:8px 12px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;gap:5px;">
+                                    <span>💬</span> Send Message
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="width:100%; text-align:center; padding:24px;">No reservations yet.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+<script>
+function ownerAction(id, action){
+    if(!confirm(action + ' reservation?')) return;
+    fetch('/api/owner/reservations/' + id + '/action', {
+        method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({action: action})
+        }).then(r=>r.json()).then(j=>{
+        if(j.success){
+            document.getElementById('status-'+id).innerText = j.status.charAt(0).toUpperCase() + j.status.slice(1);
+            showNotification('Reservation ' + action + 'ed successfully!', 'success');
+            // Optionally refresh page to update button visibility
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification(j.message || 'Failed to ' + action + ' reservation', 'error');
+        }
+    }).catch(e => {
+        showNotification('Error: ' + e.message, 'error');
+    });
+}
+</script>
+<script>
+document.querySelectorAll('.owner-action-btn').forEach(btn=>{
+    btn.addEventListener('click', function(){
+        const id = btn.getAttribute('data-reservation-id');
+        const action = btn.getAttribute('data-action');
+        if(!confirm(action + ' reservation?')) return;
+        fetch('/api/owner/reservations/' + id + '/action', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({action: action})})
+        .then(r=>r.json()).then(j=>{ if(j.success) document.getElementById('status-'+id).innerText = j.status.charAt(0).toUpperCase() + j.status.slice(1); else alert(j.message||'Failed'); });
+    });
+});
+
+// Handle Send Message buttons
+document.querySelectorAll('.send-message-btn').forEach(btn => {
+    btn.addEventListener('click', async function() {
+        const userId = btn.getAttribute('data-user-id');
+        const userName = btn.getAttribute('data-user-name');
+        
+        if (!userId) {
+            showNotification('Unable to send message: User information not found', 'error');
+            return;
+        }
+        
+        try {
+            // Create or get existing conversation
+            const response = await fetch('/api/conversation', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ user_id: parseInt(userId, 10) })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success && data.conversation_id) {
+                showNotification(`Opening chat with ${userName}...`, 'success');
+                // Redirect to chats page with the conversation
+                setTimeout(() => {
+                    window.location.href = '/owner/chats?conversation_id=' + data.conversation_id;
+                }, 800);
+            } else {
+                showNotification(data.message || 'Failed to create conversation', 'error');
+            }
+        } catch (error) {
+            console.error('Error creating conversation:', error);
+            showNotification('Error: Failed to start conversation', 'error');
+        }
+    });
+});
+
+// Notification system
+function showNotification(message, type = 'info') {
+    // Remove any existing notifications
+    const existingNotif = document.querySelector('.notification');
+    if (existingNotif) {
+        existingNotif.remove();
+    }
+    
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    
+    document.body.appendChild(notification);
+    
+    // Trigger show animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 100);
+    
+    // Auto hide after 4 seconds
+    setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => {
+            if (notification.parentNode) {
+                notification.parentNode.removeChild(notification);
+            }
+        }, 300);
+    }, 4000);
+}
+</script>
+</body>
+</html>
