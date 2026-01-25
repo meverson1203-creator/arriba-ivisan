@@ -420,11 +420,7 @@
             <a href="{{ url_for('view_resort_main', owner_id=owner.id) }}" style="text-decoration:none;color:inherit;">
                 <div class="resort">
                     <div class="resort-image">
-                        {% if owner.resort_profile_image %}
-                            <img src="{{ url_for('static', filename=owner.resort_profile_image) }}" alt="Resort Profile Image">
-                        {% else %}
-                            <img src="/static/images/bg.webp" alt="Resort Image">
-                        {% endif %}
+                        <img src="{{ owner.resort_profile_image | image_url or url_for('static', filename='images/bg.webp') }}" alt="Resort Profile Image">
                     </div>
                     <div class="resort-details">
                         <h1>{{ owner.resort_name }}</h1>
@@ -447,7 +443,7 @@
                             {% endif %}
                             {% if room_img %}
                                 <div class="room-img">
-                                    <img src="{{ url_for('static', filename=room_img) }}" alt="Room">
+                                    <img src="{{ room_img | image_url }}" alt="Room">
                                 </div>
                             {% endif %}
 
@@ -459,7 +455,7 @@
                             {% endif %}
                             {% if cottage_img %}
                                 <div class="cottage-img">
-                                    <img src="{{ url_for('static', filename=cottage_img) }}" alt="Cottage">
+                                    <img src="{{ cottage_img | image_url }}" alt="Cottage">
                                 </div>
                             {% endif %}
 
@@ -472,7 +468,7 @@
                             {% endif %}
                             {% if activity_img %}
                                 <div class="activities-img">
-                                    <img src="{{ url_for('static', filename=activity_img) }}" alt="Activity">
+                                    <img src="{{ activity_img | image_url }}" alt="Activity">
                                 </div>
                             {% endif %}
 
@@ -484,7 +480,7 @@
                             {% endif %}
                             {% if food_img %}
                                 <div class="food-img">
-                                    <img src="{{ url_for('static', filename=food_img) }}" alt="Food">
+                                    <img src="{{ food_img | image_url }}" alt="Food">
                                 </div>
                             {% endif %}
                         </div>
