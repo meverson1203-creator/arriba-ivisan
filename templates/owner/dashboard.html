@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Owner Profile</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html, body { height: 100%; }
+        body {
+            height: 100vh;
+            background: linear-gradient(90deg, rgba(204,254,216,1) 0%, rgba(148,185,255,1) 100%);
+            font-family: Georgia, 'Times New Roman', Times, serif;
+        }
+
+        /* NAVBAR */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            height: 10vh;
+            padding: 0 100px;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .title { font-size: 24px; font-weight: bold; color: #333; }
+        .nav-links { display:flex; align-items:center; }
+        .nav-links a { margin-left:20px; text-decoration:none; color:#333; font-weight:bold; }
+
+        /* LAYOUT */
+        .content {
+            display: flex;
+            width: 100%;
+            height: 90vh;            /* remaining viewport height under navbar */
+            padding: 30px 40px;
+            gap: 30px;
+        }
+
+        .sidebar {
+            background: linear-gradient(135deg, #f5faff 0%, #e3f0ff 100%);
+            width: 22%;
+            border: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 18px;
+            padding: 32px 0 24px 0;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            min-width: 220px;
+            transition: box-shadow 0.2s;
+        }
+        .sidebar h1 {
+            font-size: 1.6rem;
+            font-weight: bold;
+            color: #2193b0;
+            margin-bottom: 2.5rem;
+            letter-spacing: 1px;
+        }
+        .sidebar a {
+            font-size: 1.15rem;
+            width: 90%;
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            text-decoration: none;
+            color: #333;
+            transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .sidebar a:hover {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+        .sidebar a.active {
+            background: linear-gradient(90deg, #2193b0 0%, #6dd5ed 100%);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(33,147,176,0.08);
+        }
+        .sidebar a svg {
+            min-width: 22px;
+            min-height: 22px;
+            margin-right: 14px;
+            transition: filter 0.18s;
+        }
+        .sidebar a:hover svg {
+            filter: brightness(0) invert(1);
+        }
+        .sidebar a p {
+            margin-left: 0;
+            font-weight: 600;
+            color: inherit;
+            letter-spacing: 0.5px;
+        }
+        .modern-button {
+            background: linear-gradient(90deg,#2193b0 0%,#6dd5ed 100%);
+            color:#fff; border:none; border-radius:8px; font-size:1rem; font-weight:bold;
+            padding:0.6rem 1.6rem; cursor:pointer; margin-top:10px;
+        }
+
+        /* MAIN - make scrollable like requested */
+        .main {
+            background-color: #fff;
+            width: 100%;
+            border-radius: 14px;
+            padding: 0;                 /* cover reaches edges */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 100%;
+            overflow: auto;             /* make main scrollable */
+            position: relative;
+        }
+
+        /* COVER + PROFILE (facebook-like) */
+        .resort-hero {
+            height: 180px;
+            width: 100%;
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: url('{% if owner and owner.resort_background_image %}{{ url_for("static", filename=owner.resort_background_image) }}{% else %}{{ url_for("static", filename="images/defaults/resort.svg") }}{% endif %}');
+            position: relative;
+        }
+        .resort-hero:hover .hero-overlay {
+            opacity: 1;
+        }
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-top-left-radius: 14px;
+            border-top-right-radius: 14px;
+        }
+        .change-bg-btn {
+            background: rgba(255,255,255,0.9);
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #333;
+        }
+        .profile-card {
+            display:flex;
+            gap:18px;
+            align-items:center;
+            padding: 18px 28px;
+            transform: translateY(-48px);   /* overlap hero */
+        }
+        .profile-avatar {
+            width: 200px;
+            height: 200px;
+            border-radius: 12px;
+            background: #f2f6fb url('{% if owner and owner.resort_profile_image %}{{ url_for("static", filename=owner.resort_profile_image) }}{% else %}{{ url_for("static", filename="images/defaults/avatar.svg") }}{% endif %}') center/cover no-repeat;
+            border: 4px solid #fff;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            flex-shrink:0;
+            position: relative;
+            cursor: pointer;
+        }
+        .profile-avatar:hover .avatar-overlay {
+            opacity: 1;
+        }
+        .avatar-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            color: white;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        .profile-meta h2 {
+            margin:0; color:#2193b0; font-size:1.4rem;
+        }
+        .profile-meta p { margin:6px 0 0 0; color:#666; font-size:0.95rem; }
+
+        /* Counters row (boxes under profile) */
+        .counters-row {
+            display:flex;
+            gap:14px;
+            padding: 6px 28px 18px 28px;
+        }
+        .counter {
+            background: linear-gradient(180deg,#fff 0%, #f8fbff 100%);
+            border-radius: 10px;
+            padding: 14px 18px;
+            flex: 1;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+            display:flex;
+            flex-direction:column;
+            align-items:flex-start;
+            justify-content:center;
+        }
+        .counter .num {
+            font-weight:800; color:#0b6b8a; font-size:1.6rem;
+        }
+        .counter .label { margin-top:6px; color:#666; font-weight:700; font-size:0.95rem; }
+
+        /* Feed / timeline area */
+        .feed-area {
+            padding: 0 28px 28px 28px;
+            display:flex;
+            flex-direction:column;
+            gap:12px;
+            margin-bottom:12px;
+        }
+        .post {
+            background:#fff; border-radius:10px; padding:12px; box-shadow:0 4px 14px rgba(0,0,0,0.04);
+        }
+
+        /* make sure overflowing content inside main can scroll independently */
+        .feed-area .post { min-height: 56px; }
+
+        /* Responsive tweaks */
+        @media (max-width: 960px) {
+            .content { flex-direction: column; height: auto; padding: 18px; }
+            .sidebar { width: 100%; min-width: auto; flex-direction:row; gap:8px; padding:12px; overflow:auto; }
+            .main { border-radius: 12px; }
+            .profile-card { padding: 12px; transform: translateY(-24px); }
+            .resort-hero { height: 140px; }
+        }
+    </style>
+</head>
+<body>
+    {% if session.user_id %}
+        {% include 'partials/navbarLoggedInCustomer.html' %}
+    {% elif session.owner_id %}
+        {% include 'partials/navbarLoggedInOwner.html' %}
+    {% else %}
+        {% include 'partials/navbar.html' %}
+    {% endif %}
+
+    <div class="content">
+
+        {% include 'partials/owner_sidebar.html' %}
+
+        <!-- MAIN: cover, profile (facebook-like), counters and feed -->
+        <div class="main">
+            <!-- cover / hero -->
+            <div class="resort-hero" role="img" aria-label="Resort cover photo">
+                <div class="hero-overlay">
+                    <button class="change-bg-btn" onclick="document.getElementById('backgroundImageInput').click()">
+                        Change Background
+                    </button>
+                </div>
+            </div>
+
+            <!-- profile card (overlaps hero) -->
+            <div class="profile-card">
+                <div class="profile-avatar" aria-hidden="true" onclick="document.getElementById('profileImageInput').click()">
+                    <div class="avatar-overlay">
+                        Change Photo
+                    </div>
+                </div>
+                <div class="profile-meta">
+                    <h2>{{ owner.resort_name or 'Sample Resort Name' }}</h2>
+                    <p>{{ owner.resort_address or '123 Beachside Ave, Town, Country' }}</p>
+                    <p style="margin-top:6px; font-weight:600;">Owner: {{ owner.name or session.owner_name or 'Owner Name' }} • {{ owner.contact_number or '0917-XXX-XXXX' }}</p>
+                </div>
+            </div>
+
+            <!-- counters row -->
+            <div class="counters-row">
+                <div class="counter">
+                    <div class="num">{{ current_count | default(0) }}</div>
+                    <div class="label">Current Guests</div>
+                </div>
+                <div class="counter">
+                    <div class="num">{{ upcoming_count | default(0) }}</div>
+                    <div class="label">Upcoming Check-ins</div>
+                </div>
+                <div class="counter">
+                    <div class="num">{{ pending_count | default(0) }}</div>
+                    <div class="label">Pending Reservations</div>
+                </div>
+            </div>
+
+            <!-- feed / timeline -->
+            <div class="feed-area">
+                <div class="post">
+                    <strong>Recent activity</strong>
+                    <div style="color:#666; margin-top:8px;">This area shows quick notes about guests, service requests and reservations.</div>
+                </div>
+
+                {% if current_guests %}
+                    {% for guest in current_guests %}
+                    <div class="post">
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div>
+                                <strong>{{ guest.guest_name }}</strong>
+                                <div style="color:#666; font-size:0.95rem;">{{ guest.room }} • {{ guest.party_size }} pax</div>
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:700; color:#0b6b8a;">Checking out: {{ guest.checkout_date }}</div>
+                                <div style="margin-top:6px; color:#0b6b8a; font-weight:700;">Checked-in</div>
+                            </div>
+                        </div>
+                        {% if guest.note %}
+                        <div style="margin-top:8px; color:#444;">{{ guest.note }}</div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="post">
+                        <div style="color:#666;">No current guests to show.</div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden file inputs -->
+    <input type="file" id="profileImageInput" style="display: none;" accept="image/*" onchange="uploadResortImage('profile')">
+    <input type="file" id="backgroundImageInput" style="display: none;" accept="image/*" onchange="uploadResortImage('background')">
+
+    <script>
+        function uploadResortImage(type) {
+            const input = type === 'profile' ? document.getElementById('profileImageInput') : document.getElementById('backgroundImageInput');
+            const file = input.files[0];
+            
+            if (!file) return;
+            
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size must be less than 5MB');
+                return;
+            }
+            
+            // Check file type
+            if (!file.type.startsWith('image/')) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            const formData = new FormData();
+            if (type === 'profile') {
+                formData.append('resort_profile_image', file);
+            } else {
+                formData.append('resort_background_image', file);
+            }
+            
+            // Show loading state
+            const overlay = type === 'profile' ? document.querySelector('.avatar-overlay') : document.querySelector('.hero-overlay');
+            const originalText = overlay.innerHTML;
+            overlay.innerHTML = type === 'profile' ? 'Uploading...' : '<button class="change-bg-btn">Uploading...</button>';
+            
+            fetch('/owner/update-resort-images', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the background image
+                    if (type === 'profile' && data.resort_profile_image) {
+                        document.querySelector('.profile-avatar').style.backgroundImage = `url('${data.resort_profile_image}')`;
+                    } else if (type === 'background' && data.resort_background_image) {
+                        document.querySelector('.resort-hero').style.backgroundImage = `url('${data.resort_background_image}')`;
+                    }
+                    
+                    // Show success message
+                    alert('Image updated successfully!');
+                } else {
+                    alert('Error updating image: ' + (data.message || 'Unknown error'));
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error updating image. Please try again.');
+            })
+            .finally(() => {
+                // Restore original overlay text
+                overlay.innerHTML = originalText;
+                // Clear the input
+                input.value = '';
+            });
+        }
+    </script>
+</body>
+</html>
