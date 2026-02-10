@@ -145,7 +145,7 @@
     </svg>
     <p>Owners</p>
   </a>
-  <a href="{{ url_for('admin_chats') }}" class="{% if request.path.startswith(url_for('admin_chats')) %}active{% endif %}">
+  <a href="{{ url_for('admin_chats') }}" class="{% if request.path.startswith(url_for('admin_chats')) %}active{% endif %}" style="position: relative;">
     <svg
       viewBox="0 0 24 24"
       width="20px"
@@ -169,6 +169,9 @@
       </g>
     </svg>
     <p>Chats</p>
+    {% if unread_message_count > 0 %}
+    <span style="position: absolute; top: 6px; right: 12px; background: #e53935; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center;">{{ unread_message_count }}</span>
+    {% endif %}
   </a>
   <a href="{{ url_for('admin_review_offers') }}" class="{% if request.path.startswith(url_for('admin_review_offers')) %}active{% endif %}">
     <svg

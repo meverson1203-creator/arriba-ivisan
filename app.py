@@ -15,7 +15,11 @@ app.config['SECRET_KEY'] = 'your_secret_key_here'
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 # Database configuration
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+database_url = os.environ.get('DATABASE_URL')
+# Render provides postgres:// but SQLAlchemy 2.x requires postgresql://
+if database_url and database_url.startswith('postgres://'):
+    database_url = database_url.replace('postgres://', 'postgresql://', 1)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # file upload settings
@@ -223,6 +227,7 @@ class Message(db.Model):
     sender_owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=True)
     sender_admin_id = db.Column(db.Integer, db.ForeignKey('admin.id'), nullable=True)
     text = db.Column(db.Text, nullable=False)
+    is_read = db.Column(db.Boolean, default=False)  # Track if message has been read by recipient
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
     conversation = db.relationship('Conversation', backref=db.backref('messages', lazy=True, order_by='Message.created_at'))
@@ -265,9 +270,46 @@ class Notification(db.Model):
     related_reservation = db.relationship('Reservation', foreign_keys=[related_reservation_id])
 
 
+class Rating(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    owner_id = db.Column(db.Integer, db.ForeignKey('owner.id'), nullable=False)
+    stars = db.Column(db.Integer, nullable=False)  # 1-5
+    comment = db.Column(db.Text, nullable=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    user = db.relationship('User', backref=db.backref('ratings', lazy=True))
+    owner = db.relationship('Owner', backref=db.backref('ratings', lazy=True))
+
+    __table_args__ = (db.UniqueConstraint('user_id', 'owner_id', name='unique_user_owner_rating'),)
+
+
 # Create all database tables
 with app.app_context():
     db.create_all()
+
+    # ── Auto-migrate: add missing columns to existing tables (safe for PostgreSQL) ──
+    _migrations = [
+        ('owner',       'avatar',                 'VARCHAR(300)'),
+        ('owner',       'entrance_fee',           'VARCHAR(200)'),
+        ('owner',       'resort_profile_image',   'VARCHAR(300)'),
+        ('owner',       'resort_background_image','VARCHAR(300)'),
+        ('user',        'avatar',                 'VARCHAR(300)'),
+        ('message',     'is_read',                'BOOLEAN DEFAULT FALSE'),
+        ('room',        'beds',                   'VARCHAR(20)'),
+        ('reservation', 'expires_at',             'TIMESTAMP'),
+    ]
+    for _table, _col, _coltype in _migrations:
+        try:
+            db.session.execute(db.text(
+                f'ALTER TABLE "{_table}" ADD COLUMN "{_col}" {_coltype}'
+            ))
+            db.session.commit()
+            print(f"  Migration: added {_table}.{_col}")
+        except Exception:
+            db.session.rollback()   # column already exists – nothing to do
+
     # Ensure default admin exists
     admin = Admin.query.filter_by(username='admin').first()
     if not admin:
@@ -276,6 +318,56 @@ with app.app_context():
         db.session.add(new_admin)
         db.session.commit()
         print("Default admin created: username='admin', password='admin123'")
+
+
+# Context processor to inject unread message counts into all templates
+@app.context_processor
+def inject_unread_message_count():
+    """Inject unread message count for the current logged-in user/owner/admin into all templates."""
+    unread_count = 0
+    
+    if 'user_id' in session:
+        user_id = session['user_id']
+        # Count unread messages in regular conversations where user is participant and sender is not user
+        regular_unread = db.session.query(Message).join(Conversation).filter(
+            Conversation.user_id == user_id,
+            Message.sender != 'user',
+            Message.is_read == False
+        ).count()
+        # Count unread messages in admin conversations where user is participant and sender is not user
+        admin_unread = db.session.query(Message).join(AdminConversation).filter(
+            AdminConversation.user_id == user_id,
+            Message.sender != 'user',
+            Message.is_read == False
+        ).count()
+        unread_count = regular_unread + admin_unread
+    
+    elif 'owner_id' in session:
+        owner_id = session['owner_id']
+        # Count unread messages in regular conversations where owner is participant and sender is not owner
+        regular_unread = db.session.query(Message).join(Conversation).filter(
+            Conversation.owner_id == owner_id,
+            Message.sender != 'owner',
+            Message.is_read == False
+        ).count()
+        # Count unread messages in admin conversations where owner is participant and sender is not owner
+        admin_unread = db.session.query(Message).join(AdminConversation).filter(
+            AdminConversation.owner_id == owner_id,
+            Message.sender != 'owner',
+            Message.is_read == False
+        ).count()
+        unread_count = regular_unread + admin_unread
+    
+    elif 'admin_id' in session:
+        admin_id = session['admin_id']
+        # Count unread messages in admin conversations where admin is participant and sender is not admin
+        unread_count = db.session.query(Message).join(AdminConversation).filter(
+            AdminConversation.admin_id == admin_id,
+            Message.sender != 'admin',
+            Message.is_read == False
+        ).count()
+    
+    return {'unread_message_count': unread_count}
 
 
 def allowed_file(filename):
@@ -461,7 +553,16 @@ def demo():
 @app.route("/browse")
 def browse():
     owners = Owner.query.all()
-    return render_template("browse.html", owners=owners)
+    # Build rating summary for each owner
+    owner_ratings = {}
+    for o in owners:
+        ratings = Rating.query.filter_by(owner_id=o.id).all()
+        if ratings:
+            avg = sum(r.stars for r in ratings) / len(ratings)
+            owner_ratings[o.id] = {'avg': round(avg, 1), 'count': len(ratings)}
+        else:
+            owner_ratings[o.id] = {'avg': 0, 'count': 0}
+    return render_template("browse.html", owners=owners, owner_ratings=owner_ratings)
 
 @app.route("/user/profile")
 def user_profile():
@@ -525,20 +626,31 @@ def user_chats():
     if 'user_id' not in session:
         return redirect(url_for('home'))
     # load conversations where this user participates
-    convs = Conversation.query.filter_by(user_id=session['user_id']).order_by(Conversation.created_at.desc()).all()
+    convs = Conversation.query.filter_by(user_id=session['user_id']).all()
     conversations = []
     for c in convs:
         last_msg = None
         if c.messages:
             last_msg = c.messages[-1]
+        # Count unread messages (messages not from user that are unread)
+        unread_count = db.session.query(Message).filter(
+            Message.conversation_id == c.id,
+            Message.sender != 'user',
+            Message.is_read == False
+        ).count()
         conversations.append({
             'id': c.id,
             'owner_id': c.owner.id if c.owner else None,
             'partner_name': c.owner.name if c.owner else 'Owner',
             'partner_avatar': c.owner.avatar if c.owner else None,
             'last_text': last_msg.text if last_msg else None,
-            'last_time': last_msg.created_at.isoformat() if last_msg else None
+            'last_time': last_msg.created_at if last_msg else None,
+            'unread_count': unread_count
         })
+    # Sort: unread conversations first, then by latest message time
+    conversations.sort(key=lambda x: (x['unread_count'] == 0, x['last_time'] or datetime.min), reverse=False)
+    conversations.sort(key=lambda x: x['last_time'] or datetime.min, reverse=True)
+    conversations.sort(key=lambda x: x['unread_count'] == 0)
     return render_template('user/chats.html', conversations=conversations)
 
 
@@ -547,20 +659,30 @@ def owner_chats():
     # Render the owner chats page (owner must be logged in)
     if 'owner_id' not in session:
         return redirect(url_for('home'))
-    convs = Conversation.query.filter_by(owner_id=session['owner_id']).order_by(Conversation.created_at.desc()).all()
+    convs = Conversation.query.filter_by(owner_id=session['owner_id']).all()
     conversations = []
     for c in convs:
         last_msg = None
         if c.messages:
             last_msg = c.messages[-1]
+        # Count unread messages (messages not from owner that are unread)
+        unread_count = db.session.query(Message).filter(
+            Message.conversation_id == c.id,
+            Message.sender != 'owner',
+            Message.is_read == False
+        ).count()
         conversations.append({
             'id': c.id,
             'user_id': c.user.id if c.user else None,
             'partner_name': c.user.name if c.user else 'User',
             'partner_avatar': c.user.avatar if c.user else None,
             'last_text': last_msg.text if last_msg else None,
-            'last_time': last_msg.created_at.isoformat() if last_msg else None
+            'last_time': last_msg.created_at if last_msg else None,
+            'unread_count': unread_count
         })
+    # Sort: unread conversations first, then by latest message time
+    conversations.sort(key=lambda x: x['last_time'] or datetime.min, reverse=True)
+    conversations.sort(key=lambda x: x['unread_count'] == 0)
     return render_template('owner/chats.html', conversations=conversations)
 
 
@@ -1490,7 +1612,7 @@ def admin_chats():
             return redirect(url_for('admin_chats', conversation_id=conv.id))
     
     # Load admin conversations
-    admin_convs = AdminConversation.query.filter_by(admin_id=session['admin_id']).order_by(AdminConversation.created_at.desc()).all()
+    admin_convs = AdminConversation.query.filter_by(admin_id=session['admin_id']).all()
     conversations = []
     for c in admin_convs:
         last_msg = None
@@ -1512,14 +1634,26 @@ def admin_chats():
             partner_avatar = owner.avatar if owner else None
             partner_type = 'owner'
         
+        # Count unread messages (messages not from admin that are unread)
+        unread_count = db.session.query(Message).filter(
+            Message.admin_conversation_id == c.id,
+            Message.sender != 'admin',
+            Message.is_read == False
+        ).count()
+        
         conversations.append({
             'id': c.id,
             'partner_name': partner_name,
             'partner_avatar': partner_avatar,
             'partner_type': partner_type,
             'last_text': last_msg.text if last_msg else None,
-            'last_time': last_msg.created_at.isoformat() if last_msg else None
+            'last_time': last_msg.created_at if last_msg else None,
+            'unread_count': unread_count
         })
+    
+    # Sort: unread conversations first, then by latest message time
+    conversations.sort(key=lambda x: x['last_time'] or datetime.min, reverse=True)
+    conversations.sort(key=lambda x: x['unread_count'] == 0)
     
     return render_template('admin/chats.html', conversations=conversations)
 
@@ -2061,11 +2195,39 @@ def view_resort_main():
                 if img:
                     activities_with_images.append(img)
 
+    # Rating data
+    rating_summary = {'avg': 0, 'count': 0}
+    ratings_list = []
+    user_rating = None
+    if resort:
+        all_ratings = Rating.query.filter_by(owner_id=resort.id).order_by(Rating.created_at.desc()).all()
+        if all_ratings:
+            rating_summary = {
+                'avg': round(sum(r.stars for r in all_ratings) / len(all_ratings), 1),
+                'count': len(all_ratings)
+            }
+        for r in all_ratings:
+            ratings_list.append({
+                'id': r.id,
+                'stars': r.stars,
+                'comment': r.comment,
+                'user_name': r.user.name or r.user.username if r.user else 'Anonymous',
+                'user_avatar': r.user.avatar if r.user else None,
+                'created_at': r.created_at.strftime('%B %d, %Y') if r.created_at else '',
+            })
+        if 'user_id' in session:
+            ur = Rating.query.filter_by(user_id=session['user_id'], owner_id=resort.id).first()
+            if ur:
+                user_rating = {'stars': ur.stars, 'comment': ur.comment}
+
     return render_template('viewResortMain.html', resort=resort,
                            rooms_with_images=rooms_with_images,
                            cottages_with_images=cottages_with_images,
                            foods_with_images=foods_with_images,
-                           activities_with_images=activities_with_images)
+                           activities_with_images=activities_with_images,
+                           rating_summary=rating_summary,
+                           ratings_list=ratings_list,
+                           user_rating=user_rating)
 
 
 @app.route('/api/conversation', methods=['POST'])
@@ -2118,6 +2280,24 @@ def api_get_messages(conv_id):
         return jsonify({'success': False, 'message': 'not authorized'}), 403
     if 'owner_id' in session and session['owner_id'] != conv.owner_id:
         return jsonify({'success': False, 'message': 'not authorized'}), 403
+
+    # Mark messages as read for the current user viewing them
+    if 'user_id' in session and session['user_id'] == conv.user_id:
+        # Mark all messages not from user as read
+        Message.query.filter(
+            Message.conversation_id == conv_id,
+            Message.sender != 'user',
+            Message.is_read == False
+        ).update({'is_read': True})
+        db.session.commit()
+    elif 'owner_id' in session and session['owner_id'] == conv.owner_id:
+        # Mark all messages not from owner as read
+        Message.query.filter(
+            Message.conversation_id == conv_id,
+            Message.sender != 'owner',
+            Message.is_read == False
+        ).update({'is_read': True})
+        db.session.commit()
 
     msgs = []
     for m in conv.messages:
@@ -2203,6 +2383,32 @@ def api_get_admin_messages(conv_id):
         return jsonify({'success': False, 'message': 'not authorized'}), 403
     if 'admin_id' in session and session['admin_id'] != conv.admin_id:
         return jsonify({'success': False, 'message': 'not authorized'}), 403
+
+    # Mark messages as read for the current user viewing them
+    if 'user_id' in session and conv.user_id and session['user_id'] == conv.user_id:
+        # Mark all messages not from user as read
+        Message.query.filter(
+            Message.admin_conversation_id == conv_id,
+            Message.sender != 'user',
+            Message.is_read == False
+        ).update({'is_read': True})
+        db.session.commit()
+    elif 'owner_id' in session and conv.owner_id and session['owner_id'] == conv.owner_id:
+        # Mark all messages not from owner as read
+        Message.query.filter(
+            Message.admin_conversation_id == conv_id,
+            Message.sender != 'owner',
+            Message.is_read == False
+        ).update({'is_read': True})
+        db.session.commit()
+    elif 'admin_id' in session and session['admin_id'] == conv.admin_id:
+        # Mark all messages not from admin as read
+        Message.query.filter(
+            Message.admin_conversation_id == conv_id,
+            Message.sender != 'admin',
+            Message.is_read == False
+        ).update({'is_read': True})
+        db.session.commit()
 
     msgs = []
     for m in conv.messages:
@@ -2859,6 +3065,67 @@ def view_resort_activities():
         activities = Activity.query.filter_by(status='approved').all()
 
     return render_template('viewResortActivities.html', owner=owner, activities=activities)
+
+# ── Rating API endpoints ──────────────────────────────────────────
+@app.route('/api/ratings', methods=['POST'])
+def api_submit_rating():
+    """Submit or update a rating for a resort. Requires logged-in user."""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'You must be logged in to rate a resort.'}), 401
+    data = request.get_json() or {}
+    owner_id = data.get('owner_id')
+    stars = data.get('stars')
+    comment = data.get('comment', '').strip()
+    if not owner_id or not stars:
+        return jsonify({'success': False, 'message': 'owner_id and stars are required.'}), 400
+    stars = int(stars)
+    if stars < 1 or stars > 5:
+        return jsonify({'success': False, 'message': 'Stars must be between 1 and 5.'}), 400
+    owner = db.session.get(Owner, owner_id)
+    if not owner:
+        return jsonify({'success': False, 'message': 'Resort not found.'}), 404
+    # Check if user already rated this resort – update instead of duplicate
+    existing = Rating.query.filter_by(user_id=session['user_id'], owner_id=owner_id).first()
+    if existing:
+        existing.stars = stars
+        existing.comment = comment if comment else existing.comment
+        existing.updated_at = datetime.utcnow()
+        db.session.commit()
+        action = 'updated'
+    else:
+        new_rating = Rating(user_id=session['user_id'], owner_id=owner_id, stars=stars, comment=comment or None)
+        db.session.add(new_rating)
+        db.session.commit()
+        action = 'created'
+    # Return updated summary
+    all_ratings = Rating.query.filter_by(owner_id=owner_id).all()
+    avg = round(sum(r.stars for r in all_ratings) / len(all_ratings), 1) if all_ratings else 0
+    return jsonify({
+        'success': True,
+        'message': f'Rating {action} successfully!',
+        'avg': avg,
+        'count': len(all_ratings),
+        'user_stars': stars
+    })
+
+
+@app.route('/api/ratings/<int:owner_id>', methods=['GET'])
+def api_get_ratings(owner_id):
+    """Get all ratings for a resort."""
+    all_ratings = Rating.query.filter_by(owner_id=owner_id).order_by(Rating.created_at.desc()).all()
+    avg = round(sum(r.stars for r in all_ratings) / len(all_ratings), 1) if all_ratings else 0
+    reviews = []
+    for r in all_ratings:
+        reviews.append({
+            'id': r.id,
+            'stars': r.stars,
+            'comment': r.comment,
+            'user_name': r.user.name or r.user.username if r.user else 'Anonymous',
+            'user_avatar': r.user.avatar if r.user else None,
+            'created_at': r.created_at.strftime('%B %d, %Y') if r.created_at else '',
+        })
+    return jsonify({'success': True, 'avg': avg, 'count': len(all_ratings), 'reviews': reviews})
+
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))

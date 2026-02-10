@@ -134,6 +134,7 @@
   <a
     href="{{ url_for('user_chats') }}"
     class="{% if request.path.startswith(url_for('user_chats')) %}active{% endif %}"
+    style="position: relative;"
   >
     <svg
       viewBox="0 0 24 24"
@@ -150,6 +151,9 @@
       ></path>
     </svg>
     <p>Chats</p>
+    {% if unread_message_count > 0 %}
+    <span style="position: absolute; top: 6px; right: 12px; background: #e53935; color: #fff; font-size: 0.7rem; font-weight: bold; padding: 2px 6px; border-radius: 10px; min-width: 18px; text-align: center;">{{ unread_message_count }}</span>
+    {% endif %}
   </a>
   <div style="flex: 1"></div>
   <form

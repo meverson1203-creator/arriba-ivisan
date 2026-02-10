@@ -425,8 +425,16 @@
                     <div class="resort-details">
                         <h1>{{ owner.resort_name }}</h1>
                         <div class="rating">
-                            <div class="stars">★ ★ ★ ★ ☆</div>
-                            <div class="number-of-reviews">({{ owner.reviews or '0 reviews' }})</div>
+                            <div class="stars">
+                                {% set avg = owner_ratings[owner.id].avg if owner_ratings and owner.id in owner_ratings else 0 %}
+                                {% for i in range(1, 6) %}
+                                    {% if avg >= i %}★{% elif avg >= i - 0.5 %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="number-of-reviews">
+                                {% set cnt = owner_ratings[owner.id].count if owner_ratings and owner.id in owner_ratings else 0 %}
+                                ({{ cnt }} review{{ 's' if cnt != 1 else '' }})
+                            </div>
                         </div>
                         <div class="location">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
